@@ -7,6 +7,19 @@ Goal: a readable C++ reimplementation of the 1990 MS-DOS game, derived by disass
 running on Linux with SDL3. The original game files are **not** included: you download them
 yourself from the Internet Archive (free, a few minutes) — see the steps just below.
 
+<table>
+<tr>
+<td align="center"><img src="docs/screenshots/title.png" alt="Title screen" width="400"><br>Title screen</td>
+<td align="center"><img src="docs/screenshots/newspaper.png" alt="The monthly newspaper" width="400"><br>The monthly newspaper</td>
+</tr>
+<tr>
+<td align="center"><img src="docs/screenshots/middle-east.png" alt="Map of the region with the Foreign Office briefing" width="400"><br>The Foreign Office briefing</td>
+<td align="center"><img src="docs/screenshots/diplomacy.png" alt="Diplomacy screen for Egypt" width="400"><br>Dealing with a neighbour: Egypt</td>
+</tr>
+</table>
+
+*Screenshots of this port running with the original game files.*
+
 ## How to play (step by step)
 You need a Linux computer and a terminal. Copy each command into the terminal and press Enter.
 
@@ -94,7 +107,8 @@ This port is made in that spirit, following the usual etiquette: the original au
 contributors are credited, the original game is linked, and the port's purpose is to keep the game
 playable. It relies on the author's encouragement for using the original game files, and to
 respect it this repository contains **no original game material** — no executable, data files,
-graphics or game texts (apart from a few short messages quoted in the bug notes). At start-up the
+graphics or game texts (apart from a few short messages quoted in the bug notes, and four
+screenshots of the port in `docs/screenshots/` to show what the game looks like). At start-up the
 port reads everything it needs (texts, tables, maps, pictures, fonts) from your own copy of the
 original game, for example the one from the Internet Archive. Copyright in the original game
 remains with its owners; if the author or rights holder objects to this use, the port will be
