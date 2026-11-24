@@ -4,6 +4,7 @@
 
 #include "game/ai.hpp"
 #include "game/crt.hpp"
+#include "game/fixes.hpp"
 #include "game/globals.hpp"
 #include "game/news.hpp"
 
@@ -125,9 +126,11 @@ void covert_operations() {
                 big = word_at(0x2fe8);
                 small = word_at(0x313a);
             }
-            if (v < 7) {
+            if (v < 7) {  // failed: the attempt is exposed
                 acts_of_violence += 5;
-                us_disapproval -= 0xf;
+                // Bug #24: the original subtracts, so a failed assassination pleased the US.
+                if (fixes::fix(24)) us_disapproval += 0xf;
+                else us_disapproval -= 0xf;
                 big = word_at(0x2fea);
                 small = word_at(0x313c);
             }

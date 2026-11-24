@@ -11,6 +11,7 @@
 #include "game/dgroup.hpp"
 #include "game/fixes.hpp"
 #include "game/globals.hpp"
+#include "game/monthly.hpp"
 #include "game/news.hpp"
 #include "game/save.hpp"
 #include "game/setup.hpp"
@@ -146,6 +147,19 @@ int main() {
             },
             [] { return int(forces(Egypt, Israel, AttackHelicopters)); });
         CHECK(22, fixed < orig);
+    }
+    {  // #24 a failed assassination attempt raises US disapproval instead of lowering it
+        auto [orig, fixed] = both(
+            [] {
+                fresh();
+                us_disapproval = 20;
+                nation_status[Syria] = 0;  // a stable leader: random(5) + 0 < 7, the attempt fails
+                covert_attempts[Syria] = 0;
+                covert_action[Syria] = 1;
+                monthly::covert_operations();
+            },
+            [] { return int(us_disapproval); });
+        CHECK(24, orig == 5 && fixed == 35);
     }
     {  // #23 the front-line markers stay inside the 10-character bar
         auto [orig, fixed] = both(

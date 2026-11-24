@@ -105,6 +105,7 @@ US disapproval rises with Israeli violence and falls with diplomacy:
 | Provoking a neighbour (breaking off relations) | 15 | Accepting the land-for-peace offer | −25 |
 | Successful strike on air bases / military / civilian targets | 10 / 10–12 / 30 | Cutting defence spending | −5 |
 | Switching to hard tactics on the West Bank | 15 | | |
+| A failed assassination attempt (bug #24) | 15 | | |
 | A nuclear strike | 100 | | |
 
 Strikes on nuclear facilities do not affect it.
@@ -146,9 +147,8 @@ after two months (the private dealer; the USA otherwise).
 ## Covert operations
 - **Assassination** of a leader: succeeds more easily the more unstable the target is, and less
   each time you try (−5 per earlier attempt on that nation). Full success collapses the nation;
-  partial success raises its instability by one; failure counts as violence. (The original also
-  *lowers* US disapproval by 15 on a failure, which looks like a mistake in the original code;
-  the port keeps it.)
+  partial success raises its instability by one; a failure exposes the plot: it counts as
+  violence and raises US disapproval by 15. (The original *lowered* it instead — bug #24.)
 - **Coup**: costs 50. Succeeds when the target's insurgency + instability exceeds 14 by more than
   its home troops divided by 200 — the nation collapses. Otherwise its insurgency is
   halved, or wiped out if the coup failed badly.

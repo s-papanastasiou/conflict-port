@@ -224,7 +224,7 @@ text or tables are compiled into the port, behaviour stays identical, and save f
 interchangeable with the DOS version.
 
 ## Bugs fixed from the original
-The port found 23 bugs in the 1990 game (full details, with addresses, in
+The port found 24 bugs in the 1990 game (full details, with addresses, in
 [docs/ORIGINAL_BUGS.md](docs/ORIGINAL_BUGS.md)). They are fixed by default; run
 `conflict --original-bugs` to play with the original behaviour.
 
@@ -239,7 +239,8 @@ The port found 23 bugs in the 1990 game (full details, with addresses, in
 - **Nuclear programmes:** striking a young programme made its level negative and froze it, with an
   error printed every month (#20).
 - **Orders:** posting a brigade put its SAMs in the light-tank count (#2); supporting a maxed-out
-  insurgency still cost money (#16).
+  insurgency still cost money (#16); a failed assassination attempt improved relations with the
+  US instead of harming them (#24).
 - **AI:** uninitialised values in the neighbours' monthly decisions (#5).
 - **Interface:** Enter could not skip pauses and arrow keys waited for a second key (#7); text
   centring measured the last letter wrongly (#6); some news items were missing from a nation's
