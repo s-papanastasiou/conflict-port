@@ -1,12 +1,16 @@
-# Conflict: Middle East Political Simulator — Linux and Windows port
+# Conflict: Middle East Political Simulator — C++ port
+
+A C++ port of the 1990 MS-DOS game: a readable reimplementation derived by
+disassembly/decompilation, using SDL3 for graphics and input. It runs on **Windows** and **Linux**,
+with ready-made downloads for both on the
+[Releases page](https://github.com/s-papanastasiou/conflict-port/releases/latest).
 
 **Status:** all 119 game functions are ported and match the original in differential tests; the
 game is playable from the intro to the end-of-game analysis.
 
-Goal: a readable C++ reimplementation of the 1990 MS-DOS game, derived by disassembly/decompilation,
-running on Linux and Windows with SDL3. The original game files are **not** included: you download
-them yourself from the Internet Archive (free, a few minutes) — see the steps for
-[Linux](#how-to-play-on-linux-step-by-step) or [Windows](#how-to-play-on-windows-step-by-step).
+The original game files are **not** included: you download them yourself from the Internet Archive
+(free, a few minutes) — see the steps for [Windows](#how-to-play-on-windows-step-by-step) or
+[Linux](#how-to-play-on-linux-step-by-step).
 
 <table>
 <tr>
@@ -151,11 +155,13 @@ Wikipedia likewise notes that he "has encouraged players to download the PC vers
 This port is made in that spirit, following the usual etiquette: the original author and
 contributors are credited, the original game is linked, and the port's purpose is to keep the game
 playable. It relies on the author's encouragement for using the original game files, and to
-respect it this repository contains **no original game material** — no executable, data files,
-graphics or game texts (apart from a few short messages quoted in the bug notes, and four
-screenshots of the port in `docs/screenshots/` to show what the game looks like). At start-up the
-port reads everything it needs (texts, tables, maps, pictures, fonts) from your own copy of the
-original game, for example the one from the Internet Archive. Copyright in the original game
+respect it this repository contains **no original game data** — no executable, data files,
+graphics, maps or fonts. Two exceptions, for readability and illustration only: the game's texts
+are **quoted in code comments** next to the code that uses them (often shortened), so the code can
+be read without the game files, together with a few messages quoted in the bug notes; and four
+screenshots of the port in `docs/screenshots/` show what the game looks like. The program itself
+contains none of it: at start-up the port reads everything it needs (texts, tables, maps,
+pictures, fonts) from your own copy of the original game, for example the one from the Internet Archive. Copyright in the original game
 remains with its owners; if the author or rights holder objects to this use, the port will be
 changed or withdrawn.
 
