@@ -10,6 +10,14 @@ endif()
 
 find_package(SDL3 REQUIRED CONFIG)
 
+# Linux release build (tools/package-linux.sh): C++ runtime linked in, libSDL3.so.0 found next to
+# the program.
+option(CONFLICT_PORTABLE "Linux: static C++ runtime, look for libSDL3 next to the program" OFF)
+if(CONFLICT_PORTABLE AND NOT WIN32)
+  add_link_options(-static-libstdc++ -static-libgcc "LINKER:-rpath,$ORIGIN")
+  set(CMAKE_SKIP_BUILD_RPATH ON)  # only $ORIGIN, not the build machine's library folders
+endif()
+
 if(MINGW)
   # Windows (MinGW): C/C++ runtime linked in, so only SDL3.dll goes next to the program.
   add_link_options(-static)

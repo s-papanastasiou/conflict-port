@@ -22,6 +22,24 @@ them yourself from the Internet Archive (free, a few minutes) — see the steps 
 *Screenshots of this port running with the original game files.*
 
 ## How to play on Linux (step by step)
+
+### The quick way: download the ready-made version
+Runs on 64-bit Linux distributions from about 2022 on (Ubuntu 22.04+, Debian 12+, Linux Mint 21+,
+Fedora, Arch, …); nothing needs to be installed. In a terminal:
+
+    curl -L https://github.com/s-papanastasiou/conflict-port/releases/latest/download/conflict-linux-x86_64.tar.gz | tar xz
+    cd conflict-port
+    curl -L -o conflict.zip https://archive.org/download/conflict_201509/conflict.zip
+    unzip conflict.zip -x '__MACOSX/*'
+    ./conflict-port
+
+The first line downloads the game from this project's
+[Releases page](https://github.com/s-papanastasiou/conflict-port/releases/latest) into a folder
+`conflict-port`; the next two get the original game files from the Internet Archive into
+`conflict-port/conflict`. Next time just run `./conflict-port` in that folder (or double-click
+it). `HOW-TO-PLAY.txt` in the folder repeats these steps.
+
+### Building it yourself
 You need a terminal. Copy each command into the terminal and press Enter.
 
 **1. Install the tools to build the game** (a C++ compiler, CMake, SDL3 and unzip):
@@ -171,7 +189,7 @@ use): `python3 tools/redraw_maps.py`.
 ## Repository layout
 - `re/` — reverse-engineering notes, symbol map, checksums of the reference files
 - `tools/` — Ghidra headless pipeline (`ghidra_rebuild.sh`), disassembler helper, save decoder,
-  Windows packaging (`package-windows.sh`), map drawing (`redraw_maps.py`)
+  release packaging (`package-windows.sh`, `package-linux.sh`), map drawing (`redraw_maps.py`)
 - `assets/maps/` — the redrawn maps (`.MP`, the original map format), embedded at build time by
   `cmake/embed_maps.cmake`
 - `src/platform/` — SDL3 host, EGA driver model (640x350, front + back buffer in modelled VRAM),
@@ -257,5 +275,15 @@ and `zip` (Fedora: `sudo dnf install mingw64-gcc-c++ mingw64-SDL3 zip`):
 
 The C and C++ runtimes are linked into `conflict.exe`, so `SDL3.dll` is the only DLL it needs.
 Without `--game` the program looks for the game files in a `conflict` folder next to itself.
+
+### Linux release version
+Built in an Ubuntu 22.04 container so that it runs on older distributions too (glibc 2.35+);
+needs podman or docker:
+
+    tools/package-linux.sh          # -> dist/conflict-linux-x86_64.tar.gz (conflict-port, libSDL3.so.0, HOW-TO-PLAY.txt)
+
+SDL3 is built from source in the container and shipped next to the program (found through
+`$ORIGIN`); the C++ runtime is linked in (`-DCONFLICT_PORTABLE=ON`). The program is called
+`conflict-port` there, because `conflict` is the name of the game-files folder beside it.
 
 Rebuild the Ghidra analysis: `tools/ghidra_rebuild.sh` (needs the Ghidra flatpak).
