@@ -68,7 +68,7 @@ void save_game() {
     int slot = ui::menu_popup(100, 5, 0x15e, 0x82, ds.str(g::menu_texts[4]), 0);
     if (slot == 6) return;  // Cancel
     if (!write_file(slot_path(slot)))
-        std::fprintf(stderr, "could not write %s\n", slot_path(slot).string().c_str());
+        std::fprintf(stderr, "could not write %s\n", dos::path_utf8(slot_path(slot)).c_str());
 }
 
 // 1000:29ed

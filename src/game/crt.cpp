@@ -31,7 +31,11 @@ uint32_t dos_time_hsec() {
     auto now = system_clock::now();
     std::time_t t = system_clock::to_time_t(now);
     std::tm lt{};
+#ifdef _WIN32
+    localtime_s(&lt, &t);
+#else
     localtime_r(&t, &lt);
+#endif
     auto cs = duration_cast<milliseconds>(now.time_since_epoch()).count() % 1000 / 10;
     // 20cd:000c: ((h*60 + m)*60 + s)*100 + hundredths, computed in 16-bit registers -> DX:AX.
     uint32_t v = ((uint32_t(lt.tm_hour) * 60 + uint32_t(lt.tm_min)) * 60 + uint32_t(lt.tm_sec)) * 100 +

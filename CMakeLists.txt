@@ -10,6 +10,11 @@ endif()
 
 find_package(SDL3 REQUIRED CONFIG)
 
+if(MINGW)
+  # Windows (MinGW): C/C++ runtime linked in, so only SDL3.dll goes next to the program.
+  add_link_options(-static)
+endif()
+
 add_library(conflict_platform STATIC
   src/platform/ega.cpp
   src/platform/dosfile.cpp
@@ -53,6 +58,13 @@ target_compile_options(conflict_game PRIVATE -Wall -Wextra)
 add_executable(conflict src/game/main.cpp)
 target_link_libraries(conflict PRIVATE conflict_game)
 target_compile_options(conflict PRIVATE -Wall -Wextra)
+if(WIN32)
+  # A windowed program (no console); errors are shown in message boxes. SDL3.dll is copied next
+  # to it so the build folder runs as is.
+  set_target_properties(conflict PROPERTIES WIN32_EXECUTABLE ON)
+  add_custom_command(TARGET conflict POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3::SDL3> $<TARGET_FILE_DIR:conflict>)
+endif()
 
 enable_testing()
 add_executable(core_tests tests/core_tests.cpp)

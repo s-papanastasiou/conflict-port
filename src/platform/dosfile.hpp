@@ -5,10 +5,15 @@
 #include <cstdint>
 #include <filesystem>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <vector>
 
 namespace conflict::dos {
+
+// Paths as UTF-8 text and back (on Windows path::string() uses the ANSI code page instead).
+std::string path_utf8(const std::filesystem::path& p);
+std::filesystem::path utf8_path(std::string_view text);
 
 // Directory holding the original game files. Set once at startup.
 void set_game_dir(std::filesystem::path dir);

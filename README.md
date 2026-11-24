@@ -1,11 +1,12 @@
-# Conflict: Middle East Political Simulator — Linux port (work in progress)
+# Conflict: Middle East Political Simulator — Linux and Windows port
 
 **Status:** all 119 game functions are ported and match the original in differential tests; the
 game is playable from the intro to the end-of-game analysis.
 
 Goal: a readable C++ reimplementation of the 1990 MS-DOS game, derived by disassembly/decompilation,
-running on Linux with SDL3. The original game files are **not** included: you download them
-yourself from the Internet Archive (free, a few minutes) — see the steps just below.
+running on Linux and Windows with SDL3. The original game files are **not** included: you download
+them yourself from the Internet Archive (free, a few minutes) — see the steps for
+[Linux](#how-to-play-on-linux-step-by-step) or [Windows](#how-to-play-on-windows-step-by-step).
 
 <table>
 <tr>
@@ -20,8 +21,8 @@ yourself from the Internet Archive (free, a few minutes) — see the steps just 
 
 *Screenshots of this port running with the original game files.*
 
-## How to play (step by step)
-You need a Linux computer and a terminal. Copy each command into the terminal and press Enter.
+## How to play on Linux (step by step)
+You need a terminal. Copy each command into the terminal and press Enter.
 
 **1. Install the tools to build the game** (a C++ compiler, CMake, SDL3 and unzip):
 
@@ -71,10 +72,36 @@ The folders must end up like this:
     ./run.sh
 
 The first start builds the game, which takes a minute; after that it starts at once. You can also
-double-click `run.sh` in a file manager. If something is missing, `run.sh` says what.
+double-click `run.sh` in a file manager. If the game files are missing, the game says where they go.
 
 The manual is worth reading — the game makes much more sense with it. It is on the same Internet
 Archive page (`ConflictManual.pdf`). See [Playing](#playing) for the keys.
+
+## How to play on Windows (step by step)
+Nothing needs to be installed or built.
+
+**1. Download the game:** on this project's
+[Releases page](https://github.com/s-papanastasiou/conflict-port/releases/latest) download
+`conflict-windows.zip`. Right-click it → **Extract All…**. This gives a folder `conflict-port`
+with `conflict.exe`, `SDL3.dll` and `HOW-TO-PLAY.txt`.
+
+**2. Get the original game files:** download
+<https://archive.org/download/conflict_201509/conflict.zip> from the Internet Archive and extract
+it the same way. It contains a folder called `conflict`: move that folder into `conflict-port`,
+next to `conflict.exe`. (If there is also a `__MACOSX` folder, ignore it.) It must look like this:
+
+    conflict-port\
+    ├── conflict.exe
+    ├── SDL3.dll
+    ├── HOW-TO-PLAY.txt
+    └── conflict\
+        ├── Conflict.exe
+        ├── ISRAEL.MP
+        └── ... (the other game files)
+
+**3. Double-click `conflict.exe`.** Windows may warn "Windows protected your PC", because the
+program is not signed by a known publisher: click **More info**, then **Run anyway**. If the
+game files are not in the right place, the game says where they go.
 
 ## The original game
 *Conflict: Middle East Political Simulator* was designed and written by David J. Eastman, developed
@@ -128,7 +155,8 @@ players reported cannot be confirmed, but they are the kind of fault that matche
 
 ## Repository layout
 - `re/` — reverse-engineering notes, symbol map, checksums of the reference files
-- `tools/` — Ghidra headless pipeline (`ghidra_rebuild.sh`), disassembler helper, save decoder
+- `tools/` — Ghidra headless pipeline (`ghidra_rebuild.sh`), disassembler helper, save decoder,
+  Windows packaging (`package-windows.sh`)
 - `src/platform/` — SDL3 host, EGA driver model (640x350, front + back buffer in modelled VRAM), file and asset loading
 - `src/game/` — the game: DGROUP model (`dgroup`, `globals`), C runtime replacements (`crt`),
   driver bridge (`sys`), menus and windows (`ui`), start-up and title (`startup`), save/load (`save`),
@@ -174,9 +202,10 @@ The port found 23 bugs in the 1990 game (full details, with addresses, in
 - **Latent issues** that the shipped data never triggers were also fixed (#10–#13).
 
 ## Playing
-Get the original game files into `conflict/` (see [How to play](#how-to-play-step-by-step)), then
-run `./run.sh` — or double-click it in a file manager. It builds the game the first time (and after
-source changes) and starts it. Options are passed on, e.g. `./run.sh --original-bugs`.
+Get the original game files into `conflict/` (see [How to play on Linux](#how-to-play-on-linux-step-by-step)),
+then run `./run.sh` — or double-click it in a file manager. It builds the game the first time (and
+after source changes) and starts it. Options are passed on, e.g. `./run.sh --original-bugs`. On
+Windows, double-click `conflict.exe`, or run `conflict.exe --original-bugs` from a command prompt.
 
 Keys: arrows / Home / End to choose, Enter to confirm, Shift-B briefing, Shift-S save (at the
 newspaper), Shift-E quit; **F11** toggles fullscreen.
@@ -197,5 +226,14 @@ Differential testing against the original needs Unicorn in a local virtualenv:
     python3 -m venv .venv && .venv/bin/pip install unicorn
     .venv/bin/python tools/difftest.py --sweep nation_turn          # every save x seeds x nation
     .venv/bin/python tools/difftest.py 'pressure:2,6@conflict/CONF1.SAV#5'
+
+### Windows version
+Built on Linux with MinGW-w64 and tested with Wine. Needs the MinGW C++ compiler, SDL3 for MinGW
+and `zip` (Fedora: `sudo dnf install mingw64-gcc-c++ mingw64-SDL3 zip`):
+
+    tools/package-windows.sh        # -> dist/conflict-windows.zip (conflict.exe, SDL3.dll, HOW-TO-PLAY.txt)
+
+The C and C++ runtimes are linked into `conflict.exe`, so `SDL3.dll` is the only DLL it needs.
+Without `--game` the program looks for the game files in a `conflict` folder next to itself.
 
 Rebuild the Ghidra analysis: `tools/ghidra_rebuild.sh` (needs the Ghidra flatpak).

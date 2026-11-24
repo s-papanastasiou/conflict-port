@@ -85,4 +85,10 @@ bool parse_key_script(const std::string& text, std::vector<uint16_t>& out, std::
 // Write the visible EGA page to a BMP file (works without opening a window).
 bool save_screenshot(const ega::Ega& ega, const std::filesystem::path& path);
 
+// Shows an error in a message box (for a program started without a terminal, as on Windows).
+void show_error_box(const std::string& message);
+
+// Directory containing the running program.
+std::filesystem::path program_dir();
+
 }  // namespace conflict

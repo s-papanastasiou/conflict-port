@@ -1,5 +1,7 @@
 #include "platform/host.hpp"
 
+#include "platform/dosfile.hpp"
+
 #include <SDL3/SDL.h>
 
 #include <array>
@@ -228,11 +230,20 @@ bool parse_key_script(const std::string& text, std::vector<uint16_t>& out, std::
     return true;
 }
 
+void show_error_box(const std::string& message) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "CONFLICT", message.c_str(), nullptr);
+}
+
+std::filesystem::path program_dir() {
+    const char* base = SDL_GetBasePath();
+    return base ? dos::utf8_path(base) : std::filesystem::path(".");
+}
+
 bool save_screenshot(const ega::Ega& ega, const std::filesystem::path& path) {
     SDL_Surface* s = SDL_CreateSurface(ega::kWidth, ega::kHeight, SDL_PIXELFORMAT_ARGB8888);
     if (!s) return false;
     front_to_argb(ega, static_cast<uint32_t*>(s->pixels), s->pitch / 4);
-    bool ok = SDL_SaveBMP(s, path.string().c_str());
+    bool ok = SDL_SaveBMP(s, dos::path_utf8(path).c_str());
     SDL_DestroySurface(s);
     return ok;
 }

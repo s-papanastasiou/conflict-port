@@ -18,6 +18,15 @@ bool iequals(std::string_view a, std::string_view b) {
 }
 }  // namespace
 
+std::string path_utf8(const std::filesystem::path& p) {
+    auto u = p.u8string();
+    return std::string(u.begin(), u.end());
+}
+
+std::filesystem::path utf8_path(std::string_view text) {
+    return std::filesystem::path(std::u8string(text.begin(), text.end()));
+}
+
 void set_game_dir(std::filesystem::path dir) { g_dir = std::move(dir); }
 const std::filesystem::path& game_dir() { return g_dir; }
 
@@ -26,7 +35,7 @@ std::optional<std::filesystem::path> resolve(std::string_view name) {
     auto exact = g_dir / std::filesystem::path(name);
     if (std::filesystem::is_regular_file(exact, ec)) return exact;
     for (const auto& e : std::filesystem::directory_iterator(g_dir, ec)) {
-        if (e.is_regular_file(ec) && iequals(e.path().filename().string(), name)) return e.path();
+        if (e.is_regular_file(ec) && iequals(path_utf8(e.path().filename()), name)) return e.path();
     }
     return std::nullopt;
 }

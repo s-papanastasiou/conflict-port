@@ -1,10 +1,12 @@
 #!/bin/sh
 # Start CONFLICT. Builds the port first if needed, then runs it with the original game files in
 # ./conflict. Extra options are passed on, e.g. ./run.sh --original-bugs
-# F11 switches between window and fullscreen.
+# F11 switches between window and fullscreen. If the game files are missing, the game itself says
+# where to get them (in a message box).
 cd "$(dirname "$0")" || exit 1
 
-# Show a message in a dialog when started from a file manager, otherwise on the terminal.
+# Only for a failed build, when there is no game yet to show a message box: a dialog if a dialog
+# tool happens to be installed and there is no terminal, and always on the terminal.
 say() {
     if [ ! -t 1 ] && command -v zenity >/dev/null 2>&1; then
         zenity --error --title="CONFLICT" --text="$1" 2>/dev/null
@@ -16,23 +18,6 @@ say() {
     echo "$1" >&2
 }
 
-GAME_DIR=conflict
-if ! ls "$GAME_DIR" 2>/dev/null | grep -qi '^conflict\.exe$'; then
-    say "The original game files were not found.
-
-They go in this folder:
-$(pwd)/$GAME_DIR
-
-To get them from the Internet Archive, run these two commands in $(pwd):
-  curl -L -o conflict.zip https://archive.org/download/conflict_201509/conflict.zip
-  unzip conflict.zip -x '__MACOSX/*'
-
-Or download https://archive.org/download/conflict_201509/conflict.zip in a browser,
-unpack it and move the 'conflict' folder it contains into $(pwd).
-Then start ./run.sh again. (Details: README.md, 'How to play'.)"
-    exit 1
-fi
-
 # Build (or rebuild) when the binary is missing or older than the sources.
 if [ ! -x build/conflict ] || [ -n "$(find src CMakeLists.txt -newer build/conflict 2>/dev/null | head -n 1)" ]; then
     echo "Building CONFLICT..."
@@ -43,4 +28,4 @@ Run ./run.sh in a terminal to see the details."
     fi
 fi
 
-exec ./build/conflict --game "$GAME_DIR" "$@"
+exec ./build/conflict --game conflict "$@"

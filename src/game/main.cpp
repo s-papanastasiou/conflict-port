@@ -1,6 +1,8 @@
-// CONFLICT: Middle East Political Simulator — Linux port. Entry point (1000:b681 main).
+// CONFLICT: Middle East Political Simulator — Linux/Windows port. Entry point (1000:b681 main).
 //   conflict [--game DIR] [--scale N] [--keys LIST [--shots DIR] [--headless]]
-// DIR must contain the original game files, including CONFLICT.EXE. --keys feeds a scripted
+// DIR must contain the original game files, including CONFLICT.EXE. Without --game they are
+// looked for in a "conflict" folder next to the program, then next to the program itself, then in
+// ./conflict and the current directory. --keys feeds a scripted
 // key sequence (see parse_key_script) for testing; --shots saves a screenshot at every key wait.
 // --original-bugs turns off the fixes listed in docs/ORIGINAL_BUGS.md (exact 1990 behaviour).
 #include <cstdio>
@@ -23,9 +25,33 @@
 #include "platform/ega.hpp"
 #include "platform/host.hpp"
 
+#include <SDL3/SDL_main.h>  // on Windows: WinMain for a windowed program, UTF-8 argv
+
 using namespace conflict;
 
 namespace {
+
+// Reports a start-up error on stderr and, unless headless, in a message box (the game is often
+// started without a terminal: by double-click, or on Windows always).
+int fail(const std::string& message, bool headless, int code = 1) {
+    std::fprintf(stderr, "%s\n", message.c_str());
+    if (!headless) show_error_box(message);
+    return code;
+}
+
+std::string missing_files_message(const std::filesystem::path& dir) {
+    return "The original game files were not found.\n\n"
+           "They go in this folder:\n" + dos::path_utf8(std::filesystem::absolute(dir)) + "\n\n"
+           "Download https://archive.org/download/conflict_201509/conflict.zip\n"
+           "and unpack it. It contains a folder 'conflict' with the game files\n"
+           "(Conflict.exe, ISRAEL.MP, ...): that folder must be the one above.\n"
+           "Then start the game again. (Details: README, 'How to play'.)";
+}
+
+bool has_game_files(const std::filesystem::path& dir) {
+    dos::set_game_dir(dir);
+    return dos::resolve("CONFLICT.EXE").has_value();
+}
 
 // Everything in main() after setjmp: title, new game or load, then the monthly loop.
 void run_game() {
@@ -95,46 +121,46 @@ int game_main() {
 }  // namespace
 
 int main(int argc, char** argv) {
-    std::filesystem::path game = ".";
+    std::filesystem::path game;
+    bool game_given = false;
     int scale = 2;
     std::string keys;
     std::filesystem::path shots;
     bool headless = false;
     for (int i = 1; i < argc; ++i) {
-        if (!std::strcmp(argv[i], "--game") && i + 1 < argc) game = argv[++i];
+        if (!std::strcmp(argv[i], "--game") && i + 1 < argc) game = dos::utf8_path(argv[++i]), game_given = true;
         else if (!std::strcmp(argv[i], "--scale") && i + 1 < argc) scale = std::atoi(argv[++i]);
         else if (!std::strcmp(argv[i], "--keys") && i + 1 < argc) keys = argv[++i];
-        else if (!std::strcmp(argv[i], "--shots") && i + 1 < argc) shots = argv[++i];
+        else if (!std::strcmp(argv[i], "--shots") && i + 1 < argc) shots = dos::utf8_path(argv[++i]);
         else if (!std::strcmp(argv[i], "--headless")) headless = true;
         else if (!std::strcmp(argv[i], "--original-bugs")) fixes::set_enabled(false);
         else {
-            std::fprintf(stderr, "usage: %s [--game DIR] [--scale N] [--original-bugs] [--keys LIST [--shots DIR] [--headless]]\n", argv[0]);
-            return 2;
+            return fail("usage: conflict [--game DIR] [--scale N] [--original-bugs] [--keys LIST [--shots DIR] [--headless]]",
+                        headless, 2);
         }
     }
-    dos::set_game_dir(game);
+    if (game_given) {
+        if (!has_game_files(game))
+            return fail(missing_files_message(game), headless);
+    } else {
+        const std::filesystem::path here = program_dir();
+        bool found = false;
+        for (const auto& dir : {here / "conflict", here, std::filesystem::path("conflict"), std::filesystem::path(".")})
+            if (has_game_files(dir)) { found = true; break; }
+        if (!found)
+            return fail(missing_files_message(here / "conflict"), headless);
+    }
     std::string err;
     auto exe = dos::resolve("CONFLICT.EXE");
-    if (!exe) {
-        std::fprintf(stderr, "CONFLICT.EXE not found in %s (use --game DIR)\n", game.string().c_str());
-        return 1;
-    }
-    if (!ds.load(*exe, err)) {
-        std::fprintf(stderr, "%s\n", err.c_str());
-        return 1;
-    }
+    if (!ds.load(*exe, err)) return fail(err, headless);
     Assets assets;
-    if (!assets.load(err)) {
-        std::fprintf(stderr, "%s\n", err.c_str());
-        return 1;
-    }
+    if (!assets.load(err)) return fail(err, headless);
     ega::Ega screen;
     Host host(screen);
     if (!keys.empty()) {
         std::vector<uint16_t> script;
         if (!parse_key_script(keys, script, err)) {
-            std::fprintf(stderr, "%s\n", err.c_str());
-            return 2;
+            return fail(err, headless, 2);
         }
         host.set_script(std::move(script));
         if (!shots.empty()) {

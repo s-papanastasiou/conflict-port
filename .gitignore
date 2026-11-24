@@ -6,6 +6,8 @@
 /ghidra/
 /build/
 /build-san/
+/build-win/
+/dist/
 __pycache__/
 /re/ghidra_export/
 /.venv/
