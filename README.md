@@ -97,7 +97,8 @@ The first start builds the game, which takes a minute; after that it starts at o
 double-click `run.sh` in a file manager. If the game files are missing, the game says where they go.
 
 The manual is worth reading — the game makes much more sense with it. It is on the same Internet
-Archive page (`ConflictManual.pdf`). See [Playing](#playing) for the keys.
+Archive page (`ConflictManual.pdf`). For the exact rules behind it, see
+[How CONFLICT works](docs/HOW_THE_GAME_WORKS.md). See [Playing](#playing) for the keys.
 
 ## How to play on Windows (step by step)
 Nothing needs to be installed or built.
@@ -207,6 +208,8 @@ use): `python3 tools/redraw_maps.py`.
   command (`border`), policies (`policy`), wars and strikes (`war`), yearly events (`yearly`),
   game over (`endgame`), reports (`reports`)
 - `src/tools/viewer.cpp` — asset/driver test viewer
+- `docs/HOW_THE_GAME_WORKS.md` — the game's rules as the code implements them (thresholds,
+  what the neighbours do, wars, the US, arms, scoring)
 - `docs/ORIGINAL_BUGS.md` — bugs found in the original game and how they are fixed
 - `tests/` — core checks (RNG sequence, save files round-trip byte for byte), redrawn-map checks
   and `difftest`
