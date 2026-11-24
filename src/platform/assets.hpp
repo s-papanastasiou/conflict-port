@@ -32,6 +32,9 @@ struct Assets {
     // Loads everything from dos::game_dir(). Returns false with a message in `error` if a file
     // the original treats as mandatory is missing.
     bool load(std::string& error);
+
+    // Replace the maps with the redrawn ones built into the program (the port's launcher option).
+    void use_redrawn_maps();
 };
 
 }  // namespace conflict

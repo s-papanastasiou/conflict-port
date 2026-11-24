@@ -153,11 +153,29 @@ buffer overflow in the text windows and writes outside the front-line display at
 develops — and to fix them, together with the other bugs listed below. Whether these are the crash
 players reported cannot be confirmed, but they are the kind of fault that matches the description.
 
+## Redrawn maps
+Before the game starts, a launcher asks which maps to use: **Original** (the 1990 maps, the
+default) or **Redrawn** — new versions of all five maps with real coastlines and borders, thin
+border lines, a ripple along the coasts and city names, in the game's 16 colours. Use the arrow
+keys and Enter; Esc quits. `--maps original` or `--maps redrawn` skips the launcher.
+
+The redrawn maps keep the original layout: every country is where the original puts it and has
+its original colour, because the game draws war, collapse and brigade markers at fixed positions
+on the maps and recolours collapsed countries by colour. They are drawn by
+`tools/redraw_maps.py` from [Natural Earth](https://www.naturalearthdata.com/) data (public
+domain), projected to match the original maps, with labels in DejaVu Sans Condensed (free licence);
+the result is in `assets/maps/` and built into the program. No original game data goes into
+them. To redraw them (needs Python 3 with numpy and Pillow; Natural Earth is downloaded on first
+use): `python3 tools/redraw_maps.py`.
+
 ## Repository layout
 - `re/` — reverse-engineering notes, symbol map, checksums of the reference files
 - `tools/` — Ghidra headless pipeline (`ghidra_rebuild.sh`), disassembler helper, save decoder,
-  Windows packaging (`package-windows.sh`)
-- `src/platform/` — SDL3 host, EGA driver model (640x350, front + back buffer in modelled VRAM), file and asset loading
+  Windows packaging (`package-windows.sh`), map drawing (`redraw_maps.py`)
+- `assets/maps/` — the redrawn maps (`.MP`, the original map format), embedded at build time by
+  `cmake/embed_maps.cmake`
+- `src/platform/` — SDL3 host, EGA driver model (640x350, front + back buffer in modelled VRAM),
+  file and asset loading, the start-up launcher
 - `src/game/` — the game: DGROUP model (`dgroup`, `globals`), C runtime replacements (`crt`),
   driver bridge (`sys`), menus and windows (`ui`), start-up and title (`startup`), save/load (`save`),
   the neighbours' AI (`ai`), monthly bookkeeping (`monthly`), the newspaper, Foreign Office
@@ -166,7 +184,8 @@ players reported cannot be confirmed, but they are the kind of fault that matche
   game over (`endgame`), reports (`reports`)
 - `src/tools/viewer.cpp` — asset/driver test viewer
 - `docs/ORIGINAL_BUGS.md` — bugs found in the original game and how they are fixed
-- `tests/` — core checks (RNG sequence, save files round-trip byte for byte) and `difftest`
+- `tests/` — core checks (RNG sequence, save files round-trip byte for byte), redrawn-map checks
+  and `difftest`
 - `tools/oracle.py`, `tools/difftest.py` — differential testing: run an original function in an
   x86 emulator (Unicorn) and the ported one on the same state, compare memory byte for byte
 
@@ -206,6 +225,7 @@ Get the original game files into `conflict/` (see [How to play on Linux](#how-to
 then run `./run.sh` — or double-click it in a file manager. It builds the game the first time (and
 after source changes) and starts it. Options are passed on, e.g. `./run.sh --original-bugs`. On
 Windows, double-click `conflict.exe`, or run `conflict.exe --original-bugs` from a command prompt.
+The launcher comes first: choose the original or the [redrawn maps](#redrawn-maps), then Enter.
 
 Keys: arrows / Home / End to choose, Enter to confirm, Shift-B briefing, Shift-S save (at the
 newspaper), Shift-E quit; **F11** toggles fullscreen.
@@ -218,7 +238,9 @@ Needs CMake ≥ 3.24, a C++20 compiler and SDL3 (3.4+ for pixel-art scaling).
     ./build/conflict-viewer --game conflict --dump shots  # headless: write scene_N.bmp
     ./build/conflict --game conflict                     # the game (bugs fixed); F11: fullscreen
     ./build/conflict --game conflict --original-bugs     # exact 1990 behaviour
+    ./build/conflict --game conflict --maps redrawn      # no launcher, redrawn maps
     ./build/conflict --game conflict --headless --keys enter,enter,down,enter --shots out
+    #   scripted runs skip the launcher (original maps) unless --launcher is given
     (cd build && ctest)                                   # tests (need the files in conflict/)
 
 Differential testing against the original needs Unicorn in a local virtualenv:

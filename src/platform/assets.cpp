@@ -1,6 +1,7 @@
 #include "platform/assets.hpp"
 
 #include "platform/dosfile.hpp"
+#include "platform/redrawn_maps.hpp"
 
 namespace conflict {
 
@@ -44,6 +45,14 @@ bool Assets::load(std::string& error) {
     load_list(kMapFiles, maps);
     load_list(kPictureFiles, pictures);
     return true;
+}
+
+void Assets::use_redrawn_maps() {
+    maps.assign(kMapFiles.size(), {});
+    for (size_t i = 0; i < kMapFiles.size(); ++i) {
+        auto m = redrawn_maps::map(int(i));
+        maps[i].assign(m.begin(), m.end());
+    }
 }
 
 }  // namespace conflict

@@ -19,7 +19,7 @@ say() {
 }
 
 # Build (or rebuild) when the binary is missing or older than the sources.
-if [ ! -x build/conflict ] || [ -n "$(find src CMakeLists.txt -newer build/conflict 2>/dev/null | head -n 1)" ]; then
+if [ ! -x build/conflict ] || [ -n "$(find src assets cmake CMakeLists.txt -newer build/conflict 2>/dev/null | head -n 1)" ]; then
     echo "Building CONFLICT..."
     if ! { cmake -S . -B build -DCMAKE_BUILD_TYPE=Release >/dev/null && cmake --build build --target conflict -j; }; then
         say "Building the game failed. It needs CMake, a C++20 compiler and SDL3.

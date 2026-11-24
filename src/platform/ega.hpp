@@ -64,6 +64,8 @@ public:
     uint8_t pixel(int x, int y) const { return vram_[(size_t(kFrontBase) + y * kRowBytes) * 8 + x]; }
     // Visible page as 640x350 colour indices.
     void copy_front(std::span<uint8_t, kWidth * kHeight> out) const;
+    // Glyph slot of a character in the fonts.
+    static uint8_t map_char(uint8_t c);                                    // 1f39:0659
 
 private:
     // One entry per pixel: index = byte_offset * 8 + bit (bit 0 = leftmost pixel of the byte).
@@ -74,7 +76,6 @@ private:
     void span_raw(uint16_t base, int x0, int x1, int y, uint8_t colour);  // 1f39:035e / 03d7 core
     void draw_glyph(uint16_t src, int nrows, int bytes_per_row);           // 1f39:048e / 04fc
     uint8_t font_byte(uint16_t off) const { return font_mem[off]; }
-    static uint8_t map_char(uint8_t c);                                    // 1f39:0659
 };
 
 // Default mode 10h palette as 0xRRGGBB.

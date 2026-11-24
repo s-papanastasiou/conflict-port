@@ -15,11 +15,29 @@ if(MINGW)
   add_link_options(-static)
 endif()
 
+# The redrawn maps (assets/maps, made by tools/redraw_maps.py) are built into the program.
+set(REDRAWN_MAPS
+  ${CMAKE_SOURCE_DIR}/assets/maps/MDLEAST.MP
+  ${CMAKE_SOURCE_DIR}/assets/maps/ISRAEL.MP
+  ${CMAKE_SOURCE_DIR}/assets/maps/IRAQ.MP
+  ${CMAKE_SOURCE_DIR}/assets/maps/LIBYA.MP
+  ${CMAKE_SOURCE_DIR}/assets/maps/SYRIA.MP)
+string(REPLACE ";" "|" REDRAWN_MAPS_ARG "${REDRAWN_MAPS}")
+add_custom_command(
+  OUTPUT ${CMAKE_BINARY_DIR}/redrawn_maps.cpp
+  COMMAND ${CMAKE_COMMAND} "-DMAPS=${REDRAWN_MAPS_ARG}" -DOUT=${CMAKE_BINARY_DIR}/redrawn_maps.cpp
+          -P ${CMAKE_SOURCE_DIR}/cmake/embed_maps.cmake
+  DEPENDS ${REDRAWN_MAPS} ${CMAKE_SOURCE_DIR}/cmake/embed_maps.cmake
+  COMMENT "Embedding the redrawn maps"
+  VERBATIM)
+
 add_library(conflict_platform STATIC
   src/platform/ega.cpp
   src/platform/dosfile.cpp
   src/platform/assets.cpp
-  src/platform/host.cpp)
+  src/platform/host.cpp
+  src/platform/launcher.cpp
+  ${CMAKE_BINARY_DIR}/redrawn_maps.cpp)
 target_include_directories(conflict_platform PUBLIC src)
 target_link_libraries(conflict_platform PUBLIC SDL3::SDL3)
 target_compile_options(conflict_platform PRIVATE -Wall -Wextra)
@@ -84,6 +102,10 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/.venv/bin/python)
             --build ${CMAKE_BINARY_DIR} --sweep nation_turn --seeds 1
             "new_game#1" "new_game#7" "random:7#3")
 endif()
+
+add_executable(maps_tests tests/maps_tests.cpp)
+target_link_libraries(maps_tests PRIVATE conflict_platform)
+add_test(NAME maps_tests COMMAND maps_tests)
 
 add_executable(fixes_tests tests/fixes_tests.cpp)
 target_link_libraries(fixes_tests PRIVATE conflict_game)

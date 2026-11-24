@@ -1,5 +1,8 @@
 // CONFLICT: Middle East Political Simulator — Linux/Windows port. Entry point (1000:b681 main).
-//   conflict [--game DIR] [--scale N] [--keys LIST [--shots DIR] [--headless]]
+//   conflict [--game DIR] [--scale N] [--original-bugs] [--maps original|redrawn]
+//            [--keys LIST [--shots DIR] [--headless]]
+// Before the game a launcher offers the original or the redrawn maps (default original);
+// --maps skips it, and so do scripted runs (--keys) unless --launcher is given.
 // DIR must contain the original game files, including CONFLICT.EXE. Without --game they are
 // looked for in a "conflict" folder next to the program, then next to the program itself, then in
 // ./conflict and the current directory. --keys feeds a scripted
@@ -9,6 +12,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
+#include <optional>
 #include <string>
 
 #include "game/crt.hpp"
@@ -24,6 +28,7 @@
 #include "platform/dosfile.hpp"
 #include "platform/ega.hpp"
 #include "platform/host.hpp"
+#include "platform/launcher.hpp"
 
 #include <SDL3/SDL_main.h>  // on Windows: WinMain for a windowed program, UTF-8 argv
 
@@ -127,6 +132,8 @@ int main(int argc, char** argv) {
     std::string keys;
     std::filesystem::path shots;
     bool headless = false;
+    std::optional<MapStyle> maps;
+    bool force_launcher = false;
     for (int i = 1; i < argc; ++i) {
         if (!std::strcmp(argv[i], "--game") && i + 1 < argc) game = dos::utf8_path(argv[++i]), game_given = true;
         else if (!std::strcmp(argv[i], "--scale") && i + 1 < argc) scale = std::atoi(argv[++i]);
@@ -134,8 +141,12 @@ int main(int argc, char** argv) {
         else if (!std::strcmp(argv[i], "--shots") && i + 1 < argc) shots = dos::utf8_path(argv[++i]);
         else if (!std::strcmp(argv[i], "--headless")) headless = true;
         else if (!std::strcmp(argv[i], "--original-bugs")) fixes::set_enabled(false);
+        else if (!std::strcmp(argv[i], "--maps") && i + 1 < argc && !std::strcmp(argv[i + 1], "original")) maps = MapStyle::Original, ++i;
+        else if (!std::strcmp(argv[i], "--maps") && i + 1 < argc && !std::strcmp(argv[i + 1], "redrawn")) maps = MapStyle::Redrawn, ++i;
+        else if (!std::strcmp(argv[i], "--launcher")) force_launcher = true;
         else {
-            return fail("usage: conflict [--game DIR] [--scale N] [--original-bugs] [--keys LIST [--shots DIR] [--headless]]",
+            return fail("usage: conflict [--game DIR] [--scale N] [--original-bugs] [--maps original|redrawn]\n"
+                        "                [--keys LIST [--shots DIR] [--headless]]",
                         headless, 2);
         }
     }
@@ -169,8 +180,13 @@ int main(int argc, char** argv) {
         }
     }
     if (headless ? !host.open_headless() : !host.open("CONFLICT", scale)) return 1;
-    sys::attach(screen, &host, assets);
     try {
+        if (!maps && (keys.empty() || force_launcher)) {
+            maps = run_launcher(host, screen, assets);
+            if (!maps) return 0;  // Esc
+        }
+        if (maps == MapStyle::Redrawn) assets.use_redrawn_maps();
+        sys::attach(screen, &host, assets);
         return game_main();
     } catch (const QuitRequested&) {
         return 0;

@@ -40,7 +40,9 @@ original game files, which are not included. They are free to download:
 
    (If the unpacked files also contain a "__MACOSX" folder, ignore it.)
 
-3. Double-click conflict.exe to play.
+3. Double-click conflict.exe to play. First a launcher asks which maps to
+   use: the original 1990 maps (the default) or new redrawn ones. Arrow keys
+   to choose, Enter to start.
 
 Keys: arrows / Home / End to choose, Enter to confirm, Shift-B briefing,
 Shift-S save (at the newspaper), Shift-E quit, F11 full screen.
