@@ -35,30 +35,30 @@ Older distributions may not have SDL3 yet; then it has to be built from <https:/
 
 **2. Download this port:**
 
-    git clone https://github.com/s-papanastasiou/conflict-port-pc.git
-    cd conflict-port-pc
+    git clone https://github.com/s-papanastasiou/conflict-port.git
+    cd conflict-port
 
-(Or use GitHub's green **Code** button → **Download ZIP**, unpack it and open a terminal in the
-unpacked `conflict-port-pc` folder.)
+(Or use GitHub's green **Code** button → **Download ZIP** and unpack it. The folder it creates is
+called `conflict-port-main`; rename it to `conflict-port` and open a terminal in it.)
 
-**3. Get the original game files from the Internet Archive.** Still in the `conflict-port-pc`
+**3. Get the original game files from the Internet Archive.** Still in the `conflict-port`
 folder, run:
 
     curl -L -o conflict.zip https://archive.org/download/conflict_201509/conflict.zip
     unzip conflict.zip -x '__MACOSX/*'
 
-This creates a folder `conflict` inside `conflict-port-pc` containing `Conflict.exe` and the
+This creates a folder `conflict` inside `conflict-port` containing `Conflict.exe` and the
 game's `.DAT`, `.MP`, `.FNT` and `.SAV` files. Afterwards you can delete `conflict.zip`.
 
 *Without the terminal:* open <https://archive.org/download/conflict_201509/conflict.zip> in your
 browser to download `conflict.zip` (it is the file listed on the game's page
 <https://archive.org/details/conflict_201509> under **Download options → SHOW ALL**). Unpack it and
-move the `conflict` folder it contains into the `conflict-port-pc` folder. If your unpacker also
+move the `conflict` folder it contains into the `conflict-port` folder. If your unpacker also
 creates a `__MACOSX` folder, delete it; it is not needed.
 
 The folders must end up like this:
 
-    conflict-port-pc/
+    conflict-port/
     ├── run.sh
     ├── src/ ...
     └── conflict/
