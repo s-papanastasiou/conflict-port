@@ -4,7 +4,64 @@
 game is playable from the intro to the end-of-game analysis.
 
 Goal: a readable C++ reimplementation of the 1990 MS-DOS game, derived by disassembly/decompilation,
-running on Linux with SDL3. Original game files are **not** included; put them in `conflict/`.
+running on Linux with SDL3. The original game files are **not** included: you download them
+yourself from the Internet Archive (free, a few minutes) — see the steps just below.
+
+## How to play (step by step)
+You need a Linux computer and a terminal. Copy each command into the terminal and press Enter.
+
+**1. Install the tools to build the game** (a C++ compiler, CMake, SDL3 and unzip):
+
+| Distribution | Command |
+|---|---|
+| Fedora | `sudo dnf install gcc-c++ cmake SDL3-devel unzip curl git` |
+| Ubuntu 25.04+ / Debian 13+ | `sudo apt install g++ cmake libsdl3-dev unzip curl git` |
+| Arch / Manjaro | `sudo pacman -S gcc cmake sdl3 unzip curl git` |
+
+Older distributions may not have SDL3 yet; then it has to be built from <https://github.com/libsdl-org/SDL>.
+
+**2. Download this port:**
+
+    git clone https://github.com/s-papanastasiou/conflict-port-pc.git
+    cd conflict-port-pc
+
+(Or use GitHub's green **Code** button → **Download ZIP**, unpack it and open a terminal in the
+unpacked `conflict-port-pc` folder.)
+
+**3. Get the original game files from the Internet Archive.** Still in the `conflict-port-pc`
+folder, run:
+
+    curl -L -o conflict.zip https://archive.org/download/conflict_201509/conflict.zip
+    unzip conflict.zip -x '__MACOSX/*'
+
+This creates a folder `conflict` inside `conflict-port-pc` containing `Conflict.exe` and the
+game's `.DAT`, `.MP`, `.FNT` and `.SAV` files. Afterwards you can delete `conflict.zip`.
+
+*Without the terminal:* open <https://archive.org/download/conflict_201509/conflict.zip> in your
+browser to download `conflict.zip` (it is the file listed on the game's page
+<https://archive.org/details/conflict_201509> under **Download options → SHOW ALL**). Unpack it and
+move the `conflict` folder it contains into the `conflict-port-pc` folder. If your unpacker also
+creates a `__MACOSX` folder, delete it; it is not needed.
+
+The folders must end up like this:
+
+    conflict-port-pc/
+    ├── run.sh
+    ├── src/ ...
+    └── conflict/
+        ├── Conflict.exe
+        ├── ISRAEL.MP
+        └── ... (the other game files)
+
+**4. Start the game:**
+
+    ./run.sh
+
+The first start builds the game, which takes a minute; after that it starts at once. You can also
+double-click `run.sh` in a file manager. If something is missing, `run.sh` says what.
+
+The manual is worth reading — the game makes much more sense with it. It is on the same Internet
+Archive page (`ConflictManual.pdf`). See [Playing](#playing) for the keys.
 
 ## The original game
 *Conflict: Middle East Political Simulator* was designed and written by David J. Eastman, developed
@@ -103,8 +160,8 @@ The port found 23 bugs in the 1990 game (full details, with addresses, in
 - **Latent issues** that the shipped data never triggers were also fixed (#10–#13).
 
 ## Playing
-Put the original MS-DOS game files (CONFLICT.EXE and its data files) in `conflict/`, then run
-`./run.sh` — or double-click it in a file manager. It builds the game the first time (and after
+Get the original game files into `conflict/` (see [How to play](#how-to-play-step-by-step)), then
+run `./run.sh` — or double-click it in a file manager. It builds the game the first time (and after
 source changes) and starts it. Options are passed on, e.g. `./run.sh --original-bugs`.
 
 Keys: arrows / Home / End to choose, Enter to confirm, Shift-B briefing, Shift-S save (at the

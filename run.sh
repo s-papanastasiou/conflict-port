@@ -20,10 +20,16 @@ GAME_DIR=conflict
 if ! ls "$GAME_DIR" 2>/dev/null | grep -qi '^conflict\.exe$'; then
     say "The original game files were not found.
 
-Put the MS-DOS version of Conflict (CONFLICT.EXE and its data files) in:
+They go in this folder:
 $(pwd)/$GAME_DIR
 
-It is available at https://archive.org/details/conflict_201509"
+To get them from the Internet Archive, run these two commands in $(pwd):
+  curl -L -o conflict.zip https://archive.org/download/conflict_201509/conflict.zip
+  unzip conflict.zip -x '__MACOSX/*'
+
+Or download https://archive.org/download/conflict_201509/conflict.zip in a browser,
+unpack it and move the 'conflict' folder it contains into $(pwd).
+Then start ./run.sh again. (Details: README.md, 'How to play'.)"
     exit 1
 fi
 

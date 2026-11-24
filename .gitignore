@@ -1,9 +1,11 @@
 # Original copyrighted game files: reference only, not redistributed
 /conflict/
 /ConflictManual.pdf
+/conflict.zip
 # Ghidra project / build output
 /ghidra/
 /build/
+/build-san/
 __pycache__/
 /re/ghidra_export/
 /.venv/
