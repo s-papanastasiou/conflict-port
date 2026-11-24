@@ -54,19 +54,19 @@ void diplomacy(int n) {
     int their_rival = rival[n];
     uint16_t tmpl = word_at(0x2806);
     if (their_rival == Israel && rel_israel > 4) tmpl = word_at(0x2808);
-    if (rel_israel == 9 && sa04e[n] <= sa04e[Israel]) tmpl = word_at(0x280a);
-    if (rel_israel == 9 && sa04e[Israel] < sa04e[n]) tmpl = word_at(0x280c);
+    if (rel_israel == 9 && prestige[n] <= prestige[Israel]) tmpl = word_at(0x280a);
+    if (rel_israel == 9 && prestige[Israel] < prestige[n]) tmpl = word_at(0x280c);
     if (rel_israel > 6)
         for (int i = 0; i < 8; ++i)
             if ((i < n && at_war(n, i) != 0) || (n < i && at_war(i, n) != 0)) ++wars;
     if (wars != 0 && rel_israel < 10) tmpl = word_at(0x280e);
     if (rel_israel > 3 && forces(Israel, n, 0) > 0) tmpl = word_at(0x2812);
-    if (sa15e[n] == 0 && at_war(Israel, n) == 1) tmpl = word_at(0x2814);
-    if (sa15e[n] == 1) tmpl = word_at(0x2816);
-    if (sa15e[n] == 2) tmpl = word_at(0x2818);
+    if (peace_offer[n] == 0 && at_war(Israel, n) == 1) tmpl = word_at(0x2814);
+    if (peace_offer[n] == 1) tmpl = word_at(0x2816);
+    if (peace_offer[n] == 2) tmpl = word_at(0x2818);
     if (nation_status[n] == 10) tmpl = word_at(0x281a);
-    if (sa0de[n] != 0 && sa0de[n] < rel_israel) tmpl = word_at(0x281e);
-    if (sa0de[n] != 0 && rel_israel < sa0de[n]) tmpl = word_at(0x281c);
+    if (relation_directive[n] != 0 && relation_directive[n] < rel_israel) tmpl = word_at(0x281e);
+    if (relation_directive[n] != 0 && rel_israel < relation_directive[n]) tmpl = word_at(0x281c);
     news::format(ds.str(tmpl), n, n, comment);
     if (relations(Israel, their_rival) > 6 && rel_israel > 6) {
         std::strcpy(comment, ds.str(0x289a));  // "The "
@@ -83,7 +83,7 @@ void diplomacy(int n) {
         return;
     }
     // Directive already given this month: change it, or keep it and leave.
-    if (sa0de[n] != 0 && ui::menu_popup(0x1c2, 5, 0x276, 0x48, menu(0x0cb0), n) == 2) {
+    if (relation_directive[n] != 0 && ui::menu_popup(0x1c2, 5, 0x276, 0x48, menu(0x0cb0), n) == 2) {
         gfx_restore_rect(0x1c2, 0x276, 8, 0x7e);
         gfx_restore_rect(0x140, 0x276, 0xd2, 0x14c);
         return;
@@ -107,29 +107,29 @@ void diplomacy(int n) {
             }
             if (relations(Israel, their_rival) < 7 && forces(Israel, n, 0) == 0 &&
                 rel_israel - random(4) > 2) {
-                sa0de[n] = int16_t(rel_israel + 1);
-                if (wars != 0 && rel_israel < 9) sa0de[n] = int16_t(rel_israel + 2);
+                relation_directive[n] = int16_t(rel_israel + 1);
+                if (wars != 0 && rel_israel < 9) relation_directive[n] = int16_t(rel_israel + 2);
             } else {
-                sa0de[n] = int16_t(rel_israel);
+                relation_directive[n] = int16_t(rel_israel);
             }
-            if (sa0de[n] == 10 && sa04e[Israel] < 8 && turn_count < 10) ++sa04e[Israel];
+            if (relation_directive[n] == 10 && prestige[Israel] < 8 && turn_count < 10) ++prestige[Israel];
         } else {
-            sa0de[n] = int16_t(rel_israel);
+            relation_directive[n] = int16_t(rel_israel);
         }
         if (choice == 2 && (rel_israel > 4 || (rel_israel < 5 && border(Israel, n) == 1)))
-            sa0de[n] = int16_t(rel_israel - 1);
+            relation_directive[n] = int16_t(rel_israel - 1);
     }
     if (rel_israel > 9) {
         int choice = ui::menu_popup(0x1bd, 5, 0x276, 0x5f, menu(0x0cbc), n);
-        if (choice == 1) sa0de[n] = int16_t(rel_israel);
-        if (choice == 2) sa0de[n] = int16_t(rel_israel - 1);
+        if (choice == 1) relation_directive[n] = int16_t(rel_israel);
+        if (choice == 2) relation_directive[n] = int16_t(rel_israel - 1);
     }
     if (rel_israel == 1 && at_war(Israel, n) == 0) {
         ui::menu_popup(0x1c2, 5, 0x276, 100, menu(0x0cea), n);
-        sa0de[n] = 1;
+        relation_directive[n] = 1;
     }
     if (rel_israel == 1 && at_war(Israel, n) != 0) {
-        if (sa15e[n] == 1) {  // they offered peace
+        if (peace_offer[n] == 1) {  // they offered peace
             if (ui::menu_popup(0x1ae, 5, 0x276, 0x4b, menu(0x0cda), n) == 1) {
                 std::strcpy(title, ds.str(0x2905));  // "PEACE AGREEMENT"
                 char* text = ds.str(kWindowText);
@@ -144,10 +144,10 @@ void diplomacy(int n) {
             } else {
                 peace_news(Israel, n, 2);
             }
-            sa15e[n] = 0;
+            peace_offer[n] = 0;
         } else {
-            sa15e[n] = ui::menu_popup(0x1c2, 5, 0x276, 0x5a, menu(0x0cd8), n) == 1 ? 2 : 0;
-            sa0de[n] = 1;
+            peace_offer[n] = ui::menu_popup(0x1c2, 5, 0x276, 0x5a, menu(0x0cd8), n) == 1 ? 2 : 0;
+            relation_directive[n] = 1;
         }
     }
     gfx_restore_rect(400, 0x276, 8, 0xd2);
@@ -157,7 +157,7 @@ void diplomacy(int n) {
 // 1000:6fa6
 void intelligence(int n) {
     int instability = nation_status[n];
-    int insurgency = sa11e[n];
+    int insurgency = g::insurgency[n];
     char* title = ds.str(kWindowTitle);
     char* text = ds.str(kWindowText);
     char* lines = ds.str(kWindowLines);
@@ -166,33 +166,33 @@ void intelligence(int n) {
     std::strcat(lines, ds.str(word_at(uint16_t(0x2a94 + 2 * instability))));
     std::strcat(lines, ds.str(0x2e99));  // ".|"
     if (instability == 10) {
-        int controller = budget[n];  // a collapsed nation's budget slot holds its new master
+        int controller = gnp[n];  // a collapsed nation's GNP slot holds its new master
         if (controller < 8) {
             if (controller > -1) {
                 std::strcat(lines, ds.str(0x2eef));  // "Controlling power: "
                 std::strcat(lines, ds.str(nation_name[controller]));
                 if (nation_status[controller] == 10) {
                     std::strcat(lines, ds.str(0x2f03));  // " via "
-                    std::strcat(lines, ds.str(nation_name[budget[controller]]));
+                    std::strcat(lines, ds.str(nation_name[gnp[controller]]));
                 }
                 std::strcat(lines, ds.str(0x2f09));  // ".|"
             }
         } else {
             std::strcat(lines, ds.str(0x2ed6));  // "Controlling faction: "
-            std::strcat(lines, ds.str(word_at(uint16_t(0xfae + 2 * sa13e[n]))));
+            std::strcat(lines, ds.str(word_at(uint16_t(0xfae + 2 * faction[n]))));
             std::strcat(lines, ds.str(0x2eec));  // ".|"
         }
     } else if (insurgency != 0) {
         if (insurgency == 1) {
             std::strcat(lines, ds.str(0x2e9c));  // "Supported pressure group: "
-            std::strcat(lines, ds.str(word_at(uint16_t(0xfae + 2 * sa13e[n]))));
+            std::strcat(lines, ds.str(word_at(uint16_t(0xfae + 2 * faction[n]))));
         } else {
             std::strcat(lines, ds.str(0x2eb7));  // "State of opposition group: "
             std::strcat(lines, ds.str(word_at(uint16_t(0x2e4c + 2 * (insurgency / 2)))));
         }
         std::strcat(lines, ds.str(0x2ed3));  // ".|"
     }
-    int danger = ((insurgency + instability) - sa04e[n]) - 4;
+    int danger = ((insurgency + instability) - prestige[n]) - 4;
     if (danger < -2) std::strcpy(text, str_at(0x2dd8));
     else if (danger < 1) std::strcpy(text, str_at(0x2dda));
     if (danger > 0 && danger < 10) std::strcpy(text, str_at(uint16_t(0x2dd8 + 2 * danger)));
@@ -200,10 +200,10 @@ void intelligence(int n) {
     if (danger > 11) std::strcpy(text, str_at(0x2dec));
     if (danger > 2 && danger < 9 && at_war(Israel, n) != 0) std::strcpy(text, str_at(0x2df0));
     if (instability == 9) std::strcpy(text, str_at(0x2dee));
-    if (instability == 10 && budget[n] > 7) std::strcpy(text, str_at(0x2df4));
-    if (instability == 10 && budget[n] < 8) std::strcpy(text, str_at(0x2df2));
+    if (instability == 10 && gnp[n] > 7) std::strcpy(text, str_at(0x2df4));
+    if (instability == 10 && gnp[n] < 8) std::strcpy(text, str_at(0x2df2));
     ui::text_window(0xfa, 0x78, 0x276, 0xc3, title, text, lines);
-    if (sa0ee[n] != 0 && ui::menu_popup(0x1b8, 5, 0x276, 0x50, menu(0x0cb2), n) == 2) {
+    if (insurgency_directive[n] != 0 && ui::menu_popup(0x1b8, 5, 0x276, 0x50, menu(0x0cb2), n) == 2) {
         gfx_restore_rect(0x1b8, 0x276, 8, 0x8c);
         gfx_restore_rect(0xfa, 0x276, 0xd2, 0x155);
         return;
@@ -216,16 +216,16 @@ void intelligence(int n) {
     else
         choice = ui::menu_popup(0x140, 5, 0x276, 100, menu(0x0cfa), n);
     if (random(5) < 2) {
-        sa0ee[n] = int16_t(insurgency);  // the operation fails to change anything
+        insurgency_directive[n] = int16_t(insurgency);  // the operation fails to change anything
     } else {
         if (choice == 1 && instability < 9) {
             // Bug #16: the original charges even when the insurgency is already at maximum.
             if (!fixes::fix(16) || insurgency < 10) treasury[Israel] -= 2;
-            if (insurgency < 10) sa0ee[n] = int16_t(insurgency + 1);
+            if (insurgency < 10) insurgency_directive[n] = int16_t(insurgency + 1);
         }
         if (choice == 2 && insurgency != 0) {
             treasury[Israel] -= 2;
-            sa0ee[n] = int16_t(insurgency - 1);
+            insurgency_directive[n] = int16_t(insurgency - 1);
         }
     }
     if (instability < 10 && (insurgency > 7 || instability > 5) && choice == 3) {
@@ -234,7 +234,7 @@ void intelligence(int n) {
         int extreme = ui::menu_popup(400, 5, 0x276, 0x5a, menu(0x0cfc), n);
         if (extreme == 1) covert_action[n] = 1;  // assassinate leader
         if (extreme == 2) covert_action[n] = 2;  // start coup
-        sa0ee[n] = int16_t(insurgency);
+        insurgency_directive[n] = int16_t(insurgency);
     }
     gfx_restore_rect(0xfa, 0x276, 0xc0, 0x155);
     gfx_restore_rect(0x140, 0x276, 8, 0xb7);
@@ -246,15 +246,15 @@ void make_peace(int a, int b) {
     at_war(a, b) = 0;
     relations(a, b) = 5;
     if (a == Israel) {
-        if (s98a0[b] > 0) {
-            if (sa04e[Israel] < 10) ++sa04e[Israel];
+        if (front_line[b] > 0) {
+            if (prestige[Israel] < 10) ++prestige[Israel];
             if (nation_status[b] < 9) ++nation_status[b];
         }
-        if (s98a0[b] < 0) {
-            if (sa04e[b] < 10) ++sa04e[b];
+        if (front_line[b] < 0) {
+            if (prestige[b] < 10) ++prestige[b];
             if (nation_status[Israel] < 9) ++nation_status[Israel];
         }
-        sa15e[Israel] = 0;
+        peace_offer[Israel] = 0;
         ai::choose_rival(b);
         for (int k = 0; k < 9; ++k) {
             forces(Israel, Israel, k) += forces(Israel, b, k).get();
@@ -266,11 +266,11 @@ void make_peace(int a, int b) {
         border_brigades[b] = 0;
     } else {
         if (forces(b, a, 0) < forces(a, b, 0)) {
-            if (sa04e[a] < 10) ++sa04e[a];
+            if (prestige[a] < 10) ++prestige[a];
             nation_status[a] = 0;
         }
         if (forces(a, b, 0) < forces(b, a, 0)) {
-            if (sa04e[b] < 10) ++sa04e[b];
+            if (prestige[b] < 10) ++prestige[b];
             nation_status[b] = 0;
         }
         ai::choose_rival(a);

@@ -92,7 +92,7 @@ void west_bank() {
     std::strcpy(lines, ds.str(0x4a97));  // "Israeli presence: "
     std::strcat(lines, border_brigades[8] == 0 ? ds.str(0x4aba) : ds.str(0x4aab));  // low / full
     std::strcat(lines, ds.str(0x4ac7));  // "Tactics: "
-    std::strcat(lines, sb266 == 3 ? ds.str(0x4ad2) : ds.str(0x4ada));  // " SOFT.|", " HARD.|"
+    std::strcat(lines, west_bank_tactics == 3 ? ds.str(0x4ad2) : ds.str(0x4ada));  // " SOFT.|", " HARD.|"
     gfx_draw_map(1);
     ui::text_window(0x140, 0x78, 0x276, 0xc3, title, text, lines);
     if (west_bank_month == turn_count) {  // policy already set this month
@@ -112,12 +112,12 @@ void west_bank() {
         west_bank_month = turn_count.get();
         return;
     }
-    if (border_brigades[8] != 0 && sb266 == 3) {
+    if (border_brigades[8] != 0 && west_bank_tactics == 3) {
         int choice = ui::menu_popup(400, 5, 0x276, 0x6e, menu(0x0cd2), 0);
         if (choice == 2) {  // allow troops to engage protesters
-            sb266 = 6;
-            sb264 += 0xf;
-            sb276 += 3;
+            west_bank_tactics = 6;
+            us_disapproval += 0xf;
+            acts_of_violence += 3;
             ai::event_news(5);
             west_bank_month = turn_count.get();
             return;
@@ -129,9 +129,9 @@ void west_bank() {
             return;
         }
     }
-    if (border_brigades[8] != 0 && sb266 == 6) {
+    if (border_brigades[8] != 0 && west_bank_tactics == 6) {
         int choice = ui::menu_popup(400, 5, 0x276, 100, menu(0x0cd4), 0);
-        if (choice == 2) sb266 = 3;  // soft tactics
+        if (choice == 2) west_bank_tactics = 3;  // soft tactics
         if (choice == 1) {
             --border_brigades[8];
             ++border_brigades[Israel];

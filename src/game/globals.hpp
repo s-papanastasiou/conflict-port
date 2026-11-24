@@ -1,5 +1,4 @@
-// Named views of CONFLICT's globals in DGROUP. Offsets are DS offsets in the original; names
-// marked "?" are provisional until the code using them has been ported.
+// Named views of CONFLICT's globals in DGROUP. Offsets are DS offsets in the original.
 #pragma once
 
 #include "game/dgroup.hpp"
@@ -40,7 +39,7 @@ inline constexpr Arr<uint16_t, 64> menu_texts{0x0cec};       // pointers to '?'-
 inline constexpr Arr<uint16_t, 8> nation_adjective{0x0d80};  // "Egyptian"
 inline constexpr Arr<uint16_t, 8> nation_name{0x0d30};       // "Egypt"
 inline constexpr Arr<uint16_t, 8> nation_capital{0x10ec};    // "Cairo"
-inline constexpr Var<int16_t> status_bar_x{0xb2c4};  // ?
+inline constexpr Var<int16_t> progress_dot_x{0xb2c4};  // next mark of the "Thinking..." progress line
 
 // ---- text buffers ----
 inline constexpr uint16_t kWindowTitle = 0xa1f2;   // char[200]
@@ -51,66 +50,66 @@ inline constexpr uint16_t kReportText = 0xae72;    // char[1000], saved
 inline constexpr uint16_t kSqueezeScratch = 0x874c;  // 100 bytes cleared by squeeze_spaces
 
 // ---- game state: the 42 saved variables, in file order (see save.cpp) ----
-inline constexpr Arr<int16_t, 8> s92f0{0x92f0};   // ?
-inline constexpr Arr<int16_t, 8> s9300{0x9300};   // army reserves (x100 troops)
-inline constexpr Arr<int16_t, 64> s9310{0x9310};  // at war [a][b] (briefing shows X)
-inline constexpr Arr<int16_t, 8> s9390{0x9390};   // ?
-inline constexpr Arr<int16_t, 640> s93a0{0x93a0}; // forces [owner][location][type 0..8], [..][9] border
-inline constexpr Arr<int16_t, 8> s98a0{0x98a0};   // ?
-inline constexpr Arr<int16_t, 9> s98b0{0x98b0};   // ?
-inline constexpr Arr<int16_t, 8> s98c2{0x98c2};   // ?
-inline constexpr Arr<int16_t, 950> s98d2{0x98d2}; // ?
-inline constexpr Arr<int16_t, 8> sa03e{0xa03e};   // ?
-inline constexpr Arr<int16_t, 8> sa04e{0xa04e};   // ?
-inline constexpr Arr<int16_t, 64> sa05e{0xa05e};  // relations [a][b], a > b (briefing: POOR..GOOD)
-inline constexpr Arr<int16_t, 8> sa0de{0xa0de};   // ?
-inline constexpr Arr<int16_t, 8> sa0ee{0xa0ee};   // ?
-inline constexpr Arr<int16_t, 8> sa0fe{0xa0fe};   // ?
-inline constexpr Arr<int16_t, 8> nation_status{0xa10e};  // instability 0 (firm) .. 10 (collapsed)
-inline constexpr Arr<int16_t, 8> sa11e{0xa11e};   // ?
-inline constexpr Arr<int16_t, 8> sa12e{0xa12e};   // ?
-inline constexpr Arr<int16_t, 8> sa13e{0xa13e};   // ?
-inline constexpr Arr<int16_t, 8> sa14e{0xa14e};   // ?
-inline constexpr Arr<int16_t, 8> sa15e{0xa15e};   // ?
+// Per-nation arrays are indexed by Nation; values are as the original keeps them.
+inline constexpr Arr<int16_t, 8> gnp{0x92f0};             // economy size; a fallen nation's slot holds its conqueror
+inline constexpr Arr<int16_t, 8> army_reserves{0x9300};   // troops in reserve, refilling battle losses
+inline constexpr Arr<int16_t, 64> war_table{0x9310};      // at_war(a, b): month of the war, 0 = peace
+inline constexpr Arr<int16_t, 8> treasury{0x9390};        // defence funds ($M); grows by defence_share % of gnp a month
+inline constexpr Arr<int16_t, 640> forces_table{0x93a0};  // forces(owner, location, type); type 9: border flag
+inline constexpr Arr<int16_t, 8> front_line{0x98a0};      // Israel's front against each neighbour; + = Israel advancing, +-5 ends the war
+inline constexpr Arr<int16_t, 9> border_brigades{0x98b0}; // Israeli brigades: [n] on the border with n, [7] at home, [8] policing the West Bank
+inline constexpr Arr<int16_t, 8> morale{0x98c2};          // army morale; troops fight weaker when instability exceeds it
+inline constexpr Arr<int16_t, 950> arms_order_table{0x98d2};  // arms_order(weapon, month)
+inline constexpr Arr<int16_t, 8> defence_share{0xa03e};   // % of GNP spent on defence (yearly budget meeting)
+inline constexpr Arr<int16_t, 8> prestige{0xa04e};        // international prestige 0..10 (Foreign Office text, weapon access)
+inline constexpr Arr<int16_t, 64> relations_table{0xa05e};  // relations(a, b), stored at a > b: 1 (worst) .. 9 (best)
+inline constexpr Arr<int16_t, 8> relation_directive{0xa0de};    // relation with Israel ordered by diplomacy, applied at month end (0 none)
+inline constexpr Arr<int16_t, 8> insurgency_directive{0xa0ee};  // insurgency ordered by intelligence, applied at month end (0 none)
+inline constexpr Arr<int16_t, 8> nuclear{0xa0fe};         // nuclear programme 0..10 (10 = weapons)
+inline constexpr Arr<int16_t, 8> nation_status{0xa10e};   // instability 0 (firm) .. 10 (collapsed)
+inline constexpr Arr<int16_t, 8> insurgency{0xa11e};      // insurgency 0..10
+inline constexpr Arr<int16_t, 8> strike_order{0xa12e};    // Israel's order this month: 1 air bases, 2 military, 3 civilian, 4 nuclear sites, 5 nuclear strike
+inline constexpr Arr<int16_t, 8> faction{0xa13e};         // controlling faction / pressure group (index into the faction names at DS:0fae)
+inline constexpr Arr<int16_t, 8> rival{0xa14e};           // main rival / strike target (Israel by default; Israel's own entry is 7)
+inline constexpr Arr<int16_t, 8> peace_offer{0xa15e};     // 1: offered Israel peace, 2: peace proposed (checked in the war)
 inline constexpr Arr<uint16_t, 25> headline_ptr{0xa16e};  // near pointers into kReportText (6c39)
 inline constexpr Arr<uint16_t, 25> news_ptr{0xa1a0};      // near pointers into kNewsText (6cb7)
-inline constexpr Arr<int16_t, 8> sa1d2{0xa1d2};   // ?
-inline constexpr Arr<uint16_t, 8> sa1e2{0xa1e2};  // near pointers into string tables ?
+inline constexpr Arr<uint16_t, 8> war_status_text{0xa1d2};  // text shown at the border during a war with Israel
+inline constexpr Arr<uint16_t, 8> digest_part{0xa1e2};    // each nation's part of the news digest (kDigestText)
 inline constexpr Var<int16_t> news_count{0xb25a};
 inline constexpr Var<int16_t> headline_count{0xb25c};
 inline constexpr Var<int16_t> report_text_used{0xb25e};
 inline constexpr Var<int16_t> news_text_used{0xb260};
-inline constexpr Var<int16_t> sb262{0xb262};
-inline constexpr Var<int16_t> sb264{0xb264};
-inline constexpr Var<int16_t> sb266{0xb266};
+// Sum of all relations, less wars (150 at the start). The lower, the higher the "Middle East
+// tension" the Foreign Office reports (below 121: "totally dire"); low values call a summit.
+inline constexpr Var<int16_t> middle_east_calm{0xb262};
+// US disapproval of Israel, 0 = relations excellent. Rises with attacks and strikes, falls with
+// summits; from 50 the US stops aid and arms deliveries.
+inline constexpr Var<int16_t> us_disapproval{0xb264};
+inline constexpr Var<int16_t> west_bank_tactics{0xb266};  // policing of the West Bank: 3 soft, 6 hard
 inline constexpr Var<int16_t> turn_count{0xb268};
-inline constexpr Var<int16_t> sb26a{0xb26a};
-inline constexpr Var<int16_t> sb26c{0xb26c};
-inline constexpr Var<int16_t> sb26e{0xb26e};
+inline constexpr Var<int16_t> land_for_peace{0xb26a};     // 1 once Israel has handed a border region to a neighbour
+inline constexpr Var<int16_t> summit_agreement{0xb26c};   // 1 if Israel signed this year's summit agreement
+// Damage to Israel from enemy strikes this month: 7 = none, else kind * 100 + attacking nation.
+inline constexpr Var<int16_t> strike_damage{0xb26e};
 inline constexpr Var<int16_t> sb270_menu_context{0xb270};  // same as menu_context; saved
-inline constexpr Var<int16_t> year{0xb272};  // ?
-inline constexpr Var<int16_t> sb274{0xb274};
-inline constexpr Var<int16_t> sb276{0xb276};
+inline constexpr Var<int16_t> year{0xb272};               // from 1997
+inline constexpr Var<int16_t> month_of_year{0xb274};      // 1..12
+inline constexpr Var<int16_t> acts_of_violence{0xb276};   // Israel's, for the end-of-game summary
 
 inline constexpr Var<int16_t> loaded_game_flag{0xb278};
 
 // ---- accessors for the 2-D / 3-D state arrays ----
 inline Var<int16_t> forces(int owner, int location, int type) {
-    return s93a0[(owner * 8 + location) * 10 + type];
+    return forces_table[(owner * 8 + location) * 10 + type];
 }
 inline Var<int16_t> border(int a, int b) { return forces(a, b, 9); }
-inline Var<int16_t> relations(int a, int b) { return sa05e[a * 8 + b]; }
-inline Var<int16_t> at_war(int a, int b) { return s9310[a * 8 + b]; }
+inline Var<int16_t> relations(int a, int b) { return relations_table[a * 8 + b]; }
+inline Var<int16_t> at_war(int a, int b) { return war_table[a * 8 + b]; }
 // Relation between two nations, stored once at [larger][smaller]; rel(a, a) is the diagonal.
 inline Var<int16_t> rel(int a, int b) { return a >= b ? relations(a, b) : relations(b, a); }
-// Each nation's main rival / strike target (Israel by default; Israel's own entry is 7).
-inline constexpr Arr<int16_t, 8> rival = sa14e;
-inline constexpr Arr<int16_t, 8> nuclear = sa0fe;  // nuclear programme 0..10
-inline constexpr Arr<int16_t, 8> treasury = s9390;
-inline constexpr Arr<int16_t, 8> budget = s92f0;
-// Arms on order: [weapon 0..18][month 0..49] units arriving that month (s98d2).
-inline Var<int16_t> arms_order(int weapon, int month) { return s98d2[weapon * 50 + month]; }
-inline constexpr Arr<int16_t, 9> border_brigades = s98b0;  // Israeli brigades per border; [7] pool?
+// Arms on order: [weapon 0..18][month 0..49] units arriving that month.
+inline Var<int16_t> arms_order(int weapon, int month) { return arms_order_table[weapon * 50 + month]; }
 inline constexpr Arr<int16_t, 19> weapon_force_type{0x40a8};  // weapon -> forces() type slot
 // Not saved: this month's covert action per nation (1 assassinate, 2 coup) and attempt count.
 inline constexpr Arr<int16_t, 8> covert_action{0xb2d6};

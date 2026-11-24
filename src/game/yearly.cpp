@@ -27,15 +27,15 @@ void budget_meeting(int year) {
     char* text = ds.str(kWindowText);
     char* lines = ds.str(kWindowLines);
     crt::itoa(year, year_text);
-    crt::itoa(sa03e[Israel], gnp_text);
+    crt::itoa(defence_share[Israel], gnp_text);
     std::strcpy(title, year_text);
     std::strcat(title, ds.str(0x7cb5));  // " DEFENSE BUDGET MEETING"
     std::strcpy(aid_text, ds.str(0x7ccd));  // ""
     int aid = 0;
-    if (sb264 < 5) aid = 3000;
-    else if (sb264 < 0x1e) aid = 2000;
-    if (sb264 > 0x1d && sb264 < 0x32) aid = 1000;
-    if (sb264 > 0x31) aid = 0;
+    if (us_disapproval < 5) aid = 3000;
+    else if (us_disapproval < 0x1e) aid = 2000;
+    if (us_disapproval > 0x1d && us_disapproval < 0x32) aid = 1000;
+    if (us_disapproval > 0x31) aid = 0;
     treasury[Israel] += int16_t(aid);
     crt::itoa(aid, aid_text);
     std::strcpy(text, ds.str(0x7cce));  // "                                              …"
@@ -67,15 +67,15 @@ void budget_meeting(int year) {
     if (nation_status[Iraq] != 10) gfx_restore_rect(400, 0x276, 8, 0x96);
     gfx_restore_rect(0x172, 0x276, 0xb7, 0x155);
     if (choice == 1) {
-        sa03e[Israel] += 2;
+        defence_share[Israel] += 2;
         if (nation_status[Israel] > 5) ++nation_status[Israel];
     }
     if (choice == 2) {
-        sa03e[Israel] -= 2;
+        defence_share[Israel] -= 2;
         if (nation_status[Israel] > 0 && nation_status[Israel] < 6) --nation_status[Israel];
-        sb264 -= 5;
+        us_disapproval -= 5;
     }
-    if (sb26c == 0) {
+    if (summit_agreement == 0) {
         std::strcpy(title, ds.str(0x7e37));  // "Army size"
         std::strcpy(text, ds.str(0x7e41));  // " We are able to build our army size by 2 briga…"
         std::strcpy(lines, ds.str(0x7e90));  // "|This may be viewed as aggressive| by the U.S.|"
@@ -87,11 +87,11 @@ void budget_meeting(int year) {
             forces(Israel, Israel, 0) += 400;
         }
     }
-    sb26c = 0;
+    summit_agreement = 0;
 }
 
 void summit() {
-    int us_before = sb264;
+    int us_before = us_disapproval;
     char* title = ds.str(kWindowTitle);
     char* text = ds.str(kWindowText);
     char* lines = ds.str(kWindowLines);
@@ -100,7 +100,7 @@ void summit() {
     std::strcpy(text, ds.str(0x7900));  // "                                              …"
     ui::text_window(0x96, 0x37, 0x1e0, 100, title, text, ds.str(0x7963));  // "|"
     if (ui::menu_popup(200, 0x6e, 0x1ae, 0xa0, menu(0x0cf6), 0) == 2) {
-        sb264 += 5;  // Israel stayed away
+        us_disapproval += 5;  // Israel stayed away
         return;
     }
     gfx_draw_map(0);
@@ -140,9 +140,9 @@ void summit() {
     int best = Jordan;
     for (int n = 0; n < 8; ++n)
         if (border(Israel, n) == 1 && relations(Israel, n) > 3 && nation_status[n] < 8 &&
-            sa04e[best] <= sa04e[n])
+            prestige[best] <= prestige[n])
             best = n;
-    if (sb26a == 0 && relations(Israel, best) > 3 && nation_status[best] < 8) {
+    if (land_for_peace == 0 && relations(Israel, best) > 3 && nation_status[best] < 8) {
         std::strcpy(buf, ds.str(0x7a88));  // "In order to settle the Palestinian ..."
         std::strcat(buf, ds.str(nation_name[best]));
         std::strcat(buf, ds.str(0x7af7));  // " has offered to take control of the "
@@ -151,14 +151,14 @@ void summit() {
         std::strcpy(lines, ds.str(0x7b8f));  // "|This would involve a territorial loss,but a p…"
         ui::text_window(0x46, 100, 0x230, 0xc3, title, buf, lines);
         if (ui::menu_popup(0x1a4, 5, 0x276, 0x50, menu(0x0cde), 1) == 1) {
-            sb264 -= 0x19;
-            if (sa04e[Israel] < 10) ++sa04e[Israel];
-            if (sa04e[best] < 10) ++sa04e[best];
-            s98a0[best] = -2;
-            sa11e[Israel] = 0;
+            us_disapproval -= 0x19;
+            if (prestige[Israel] < 10) ++prestige[Israel];
+            if (prestige[best] < 10) ++prestige[best];
+            front_line[best] = -2;
+            insurgency[Israel] = 0;
             border_brigades[Israel] += border_brigades[8].get();
             border_brigades[8] = 0;
-            sb26a = 1;
+            land_for_peace = 1;
         }
     }
     gfx_draw_map(0);
@@ -170,10 +170,10 @@ void summit() {
     int choice = ui::menu_popup(0x1ae, 5, 0x276, 100, menu(0x0ce2), 1);
     gfx_restore_rect(0x6e, 0x208, 0xd2, 0x155);
     if (choice == 1) {
-        sb264 -= 0xf;
-        sb26c = 1;
+        us_disapproval -= 0xf;
+        summit_agreement = 1;
     }
-    if (us_before > 0x31 && sb264 < 0x32) ai::event_news(6);
+    if (us_before > 0x31 && us_disapproval < 0x32) ai::event_news(6);
 }
 
 }  // namespace conflict::yearly

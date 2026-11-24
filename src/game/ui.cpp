@@ -290,7 +290,7 @@ void draw_icon_border(int icon) {
 
 // 1000:245c — "Thinking..." status box shown while the computer moves.
 void draw_status_bar() {
-    g::status_bar_x = int16_t(gfx_text_width(ds.str(0x18d8)) + 0x68);  // "Thinking..."
+    g::progress_dot_x = int16_t(gfx_text_width(ds.str(0x18d8)) + 0x68);  // "Thinking..."
     draw_panel(100, 0xaa, 0xe6, 0xb6);
     gfx_moveto(0x69, 0x12e);
     gfx_text_small(ds.str(0x18e4));  // "Thinking.. "

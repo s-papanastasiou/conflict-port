@@ -43,10 +43,10 @@ void player_month() {
     int options[3] = {0, 0, 0};
     int option_count = 0;
     if (loaded_game_flag == 0) {
-        treasury[Israel] = int16_t(int(double(float(double(sa03e[Israel]))) / 100.0 * double(budget[Israel]) +
+        treasury[Israel] = int16_t(int(double(float(double(defence_share[Israel]))) / 100.0 * double(gnp[Israel]) +
                                        double(treasury[Israel])));
-        int pressure = (sa11e[Israel] + nation_status[Israel]) - sa04e[Israel];
-        int policing = border_brigades[8] * sb266;
+        int pressure = (insurgency[Israel] + nation_status[Israel]) - prestige[Israel];
+        int policing = border_brigades[8] * west_bank_tactics;
         if (crt::random(10) < pressure - policing) {
             ++nation_status[Israel];
             if (nation_status[Israel] > 9) endgame::game_over(0, 0, 7, 0);  // voted out
@@ -54,34 +54,34 @@ void player_month() {
         }
         if (turn_count == 1) {
             year = 0x7cd;  // 1997
-            sb274 = 0;
+            month_of_year = 0;
             warned_world_opinion = 0;
         }
-        ++sb274;  // month of the year
-        if (sb274 == 13) {
+        ++month_of_year;  // month of the year
+        if (month_of_year == 13) {
             ++year;
-            sb274 = 1;
+            month_of_year = 1;
         }
         for (int n = 0; n < 8; ++n) {
-            sa12e[n] = 0;
-            sa0de[n] = 0;
-            sa0ee[n] = 0;
+            strike_order[n] = 0;
+            relation_directive[n] = 0;
+            insurgency_directive[n] = 0;
             covert_action[n] = 0;
         }
         // Middle East calm: sum of relations between surviving nations, minus war months.
-        sb262 = 0;
+        middle_east_calm = 0;
         for (int a = 1; a < 8; ++a)
             for (int b = 0; b < a; ++b) {
                 if (nation_status[a] < 10 && nation_status[b] < 10) {
-                    sb262 += relations(a, b).get();
+                    middle_east_calm += relations(a, b).get();
                     int war = at_war(a, b);
-                    if (war != 0) sb262 -= int16_t(war);
+                    if (war != 0) middle_east_calm -= int16_t(war);
                 } else {
-                    sb262 += 5;
+                    middle_east_calm += 5;
                 }
             }
-        if (turn_count > 2 && sb274 == 1) yearly::budget_meeting(year);
-        if (sb274 == 7 && sb262 < 0x96) yearly::summit();
+        if (turn_count > 2 && month_of_year == 1) yearly::budget_meeting(year);
+        if (month_of_year == 7 && middle_east_calm < 0x96) yearly::summit();
         if (nation_status[Syria] > 9 && nation_status[Egypt] > 9 && nation_status[Lebanon] > 9 &&
             nation_status[Jordan] > 9)
             endgame::game_over(1, 1, 99, 0);  // all border states fallen: victory
@@ -90,7 +90,7 @@ void player_month() {
     crt::itoa(year, year_text);
     if (headline_count != 0) {
         newspaper::show();
-        std::strcpy(text, month_name(sb274));
+        std::strcpy(text, month_name(month_of_year));
         std::strcat(text, ds.str(0x1b5c));  // " "
         std::strcat(text, year_text);
         std::strcat(text, ds.str(0x1b5e));  // "?<Good morning, Prime Minister>?"
@@ -107,16 +107,16 @@ void player_month() {
     int choice = 0;  // uninitialised in the original
     while (choice != 8) {
         crt::itoa(treasury[Israel], budget_text);
-        std::strcpy(title, month_name(sb274));
+        std::strcpy(title, month_name(month_of_year));
         std::strcat(title, ds.str(0x1b81));  // " "
         std::strcat(title, year_text);
         std::strcat(title, ds.str(0x1b83));  // " Foreign Office"
         affairs::foreign_office_advice();
         std::strcpy(lines, ds.str(0x1b93));  // "Our international prestige is "
-        std::strcat(lines, ds.str(word_at(uint16_t(0x1098 + 2 * sa04e[Israel]))));
+        std::strcat(lines, ds.str(word_at(uint16_t(0x1098 + 2 * prestige[Israel]))));
         std::strcat(lines, ds.str(0x1bb3));  // ". Middle East tension is "
-        if (sb262 < 0x79) std::strcat(lines, ds.str(0x1bcd));  // "totally dire"
-        else std::strcat(lines, ds.str(word_at(uint16_t(0x1032 + 2 * ((sb262 - 0x78) / 5)))));
+        if (middle_east_calm < 0x79) std::strcat(lines, ds.str(0x1bcd));  // "totally dire"
+        else std::strcat(lines, ds.str(word_at(uint16_t(0x1032 + 2 * ((middle_east_calm - 0x78) / 5)))));
         std::strcat(lines, ds.str(0x1bda));  // ".|"
         ui::text_window(0x9b, 0x7d, 0x203, 0xbe, title, text, lines);
         menu_context = 1;
@@ -128,42 +128,42 @@ void player_month() {
     }
     // Directives given this month take effect.
     for (int n = 0; n < 8; ++n) {
-        int wanted = sa0de[n];
+        int wanted = relation_directive[n];
         if (wanted != 0 && wanted != relations(Israel, n)) {
             relations(Israel, n) = int16_t(wanted);
             ai::relation_news(Israel, n);
         }
-        if (sa0ee[n] != 0) sa11e[n] = sa0ee[n].get();
+        if (insurgency_directive[n] != 0) insurgency[n] = insurgency_directive[n].get();
     }
     // National Security Office until "Next Turn".
     for (;;) {
         std::strcpy(text, ds.str(0x1bdd));  // "Always keep the security of Israel in mind."
         if (turn_count > 2 && (nuclear[Israel] < nuclear[Egypt] || nuclear[Israel] < nuclear[Syria]))
             security_advice(0x11);
-        if (turn_count > 5 && sb264 < 10 && relations(Israel, Egypt) > 2 && relations(Israel, Syria) > 2 &&
+        if (turn_count > 5 && us_disapproval < 10 && relations(Israel, Egypt) > 2 && relations(Israel, Syria) > 2 &&
             relations(Israel, Lebanon) > 2 && relations(Israel, Jordan) > 2)
             security_advice(0x14);
-        if (sb274 == 7 && sb26c == 1) security_advice(0x12);
-        if (sb26a == 0) {
+        if (month_of_year == 7 && summit_agreement == 1) security_advice(0x12);
+        if (land_for_peace == 0) {
             if (nation_status[Israel] > 3) security_advice(0xc);
             if (nation_status[Israel] > 5) security_advice(3);
             if (nation_status[Israel] > 7) security_advice(4);
-            if (nation_status[Israel] > 3 && sb274 == 5) security_advice(0xe);
+            if (nation_status[Israel] > 3 && month_of_year == 5) security_advice(0xe);
         }
         if (at_war(Israel, Egypt) == 3) security_advice(0x15);
         if (at_war(Israel, Syria) == 2) security_advice(0x16);
-        if (sb26a == 1) {
+        if (land_for_peace == 1) {
             if (nation_status[Israel] == 6) security_advice(0xf);
             if (nation_status[Israel] > 6) security_advice(0x10);
         }
-        if (warned_world_opinion == 1 && sb264 > 0x32) security_advice(0x13);
-        if (sb26e != 7) security_advice(2);
+        if (warned_world_opinion == 1 && us_disapproval > 0x32) security_advice(0x13);
+        if (strike_damage != 7) security_advice(2);
         for (int n = 0; n < 7; ++n)
             if (forces(n, Israel, Troops) != 0 && forces(Israel, n, Troops) == 0) security_advice(5);
         crt::itoa(treasury[Israel], budget_text);
         crt::itoa(year, year_text);
         std::strcpy(policy_menu, menu(0x0ca6));  // "Policy:?Purchase arms?Strategic Action?Review Forces?"
-        std::strcpy(title, month_name(sb274));
+        std::strcpy(title, month_name(month_of_year));
         std::strcat(title, ds.str(0x1c09));  // " "
         std::strcat(title, year_text);
         std::strcat(title, ds.str(0x1c0b));  // " National Security Office"
@@ -175,7 +175,7 @@ void player_month() {
         // Next Turn.
         if (nuclear[Israel] != 10) options[0] = 0;
         option_count = nuclear[Israel] != 10 ? 1 : 0;
-        if (sb26a == 0) options[option_count++] = 1;
+        if (land_for_peace == 0) options[option_count++] = 1;
         options[option_count++] = 2;
         for (int i = 0; i < option_count; ++i)
             std::strcat(policy_menu, ds.str(word_at(uint16_t(0x1b56 + 2 * options[i]))));

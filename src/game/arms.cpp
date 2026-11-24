@@ -83,7 +83,7 @@ void procurement() {
                     std::strcpy(text, ds.str(0x4677));  // "Our government feels unable to trade"
                     std::strcat(text, ds.str(0x469c));  // " until your funds are larger."
                 }
-                if (sb264 > 0x31 && supplier != 3) {  // official arms embargo
+                if (us_disapproval > 0x31 && supplier != 3) {  // official arms embargo
                     std::strcpy(text, ds.str(0x46ba));  // "Due to the offical arms embargo on Israel,"
                     std::strcat(text, ds.str(0x46e5));  // "I have been instructed to make no sales."
                 }
@@ -104,8 +104,8 @@ void procurement() {
                 std::strcpy(text, ds.str(word_at(uint16_t(0x44ea + 2 * (r - 1)))));
             }
             int mood = 6;
-            if (sa04e[Israel] > 3 && treasury[Israel] > 0xfa) mood = 5;
-            if (sa04e[Israel] > 3 && treasury[Israel] > 500) mood = 4;
+            if (prestige[Israel] > 3 && treasury[Israel] > 0xfa) mood = 5;
+            if (prestige[Israel] > 3 && treasury[Israel] > 500) mood = 4;
             if (treasury[Israel] < 200) mood = 7;
             if (treasury[Israel] > 1000) mood = 10;
             if (total_deals > 5 && total_deals == supplier_deals[supplier]) mood = 9;
@@ -129,7 +129,7 @@ void procurement() {
     }
 }
 
-// Weapons a supplier will sell: prestige and loyalty high enough and the budget covers a unit.
+// Weapons a supplier will sell: prestige and loyalty high enough and the treasury covers a unit.
 // No sales from governments (USA/Britain/France) while US disapproval is 50 or more.
 int list_offers(int supplier, int* offers) {
     int funds = treasury[Israel];
@@ -138,10 +138,10 @@ int list_offers(int supplier, int* offers) {
     static const Range kRanges[] = {{0, 7, 99, true}, {7, 11, 0x31, true}, {11, 14, 0x31, true}, {14, 19, 99, false}};
     if (supplier < 0 || supplier > 3) return 0;
     const Range& r = kRanges[supplier];
-    if (r.embargo && !(sb264 < 0x32)) return 0;
+    if (r.embargo && !(us_disapproval < 0x32)) return 0;
     int loyalty = total_deals == 0 ? 100 : (supplier_deals[supplier] * 100) / total_deals;
     for (int w = r.first; w < r.last; ++w)
-        if (weapon_min_prestige[w] <= sa04e[Israel] && weapon_min_loyalty[w] <= loyalty &&
+        if (weapon_min_prestige[w] <= prestige[Israel] && weapon_min_loyalty[w] <= loyalty &&
             weapon_cost[w] < funds && funds > r.min_funds)
             offers[count++] = w;
     return count;

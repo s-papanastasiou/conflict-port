@@ -53,7 +53,7 @@ void fight_wars() {
             if (!(relations(a, b) == 1 && nation_status[a] < 10 && nation_status[b] < 10)) continue;
             if (fixes::fix(3)) fights = 0;  // bug #3: count this pair's battles only
             if (at_war(a, b) != 0 || a != Israel) mobilise(a, b);
-            if (sa15e[b] == 2) peace_offer_check(b);
+            if (peace_offer[b] == 2) peace_offer_check(b);
             progress_dot();
             int troops_a = forces(a, b, Troops), tanks_a = forces(a, b, MainBattleTanks);
             int troops_b = forces(b, a, Troops), tanks_b = forces(b, a, MainBattleTanks);
@@ -108,39 +108,39 @@ void fight_wars() {
             if (a == Israel && fights != 0 && at_war(Israel, b) > 1) {
                 if (forces(Israel, b, MainBattleTanks) < 1 || forces(b, Israel, MainBattleTanks) < 1) {
                     if (forces(Israel, b, MainBattleTanks) == 0) {
-                        --s98a0[b];
-                        casualty_news(Israel, b, 2, s98a0[b]);
+                        --front_line[b];
+                        casualty_news(Israel, b, 2, front_line[b]);
                     }
                     if (forces(b, Israel, MainBattleTanks) == 0) {
-                        ++s98a0[b];
-                        casualty_news(b, Israel, 2, s98a0[b]);
+                        ++front_line[b];
+                        casualty_news(b, Israel, 2, front_line[b]);
                     }
                 } else {
                     int s = sign(lost_troops_b - lost_troops_a) + sign(lost_tanks_b - lost_tanks_a);
-                    s98a0[b] += int16_t(sign(s));
+                    front_line[b] += int16_t(sign(s));
                 }
             }
             if (at_war(a, b) == 6) {
-                --s98c2[a];
-                --s98c2[b];
+                --morale[a];
+                --morale[b];
             }
-            if (a == Israel && troops_a < 1 && troops_b != 0) s98a0[b] = -5;
+            if (a == Israel && troops_a < 1 && troops_b != 0) front_line[b] = -5;
             conquest_check(8, 8, b, a, fights);
-            if (lost_troops_a > 0 && lost_troops_a <= s9300[a]) {  // reserves refill the army
+            if (lost_troops_a > 0 && lost_troops_a <= army_reserves[a]) {  // reserves refill the army
                 forces(a, a, Troops) += int16_t(lost_troops_a);
-                s9300[a] -= int16_t(lost_troops_a);
+                army_reserves[a] -= int16_t(lost_troops_a);
             }
-            if (lost_troops_b > 0 && lost_troops_b <= s9300[b]) {
+            if (lost_troops_b > 0 && lost_troops_b <= army_reserves[b]) {
                 forces(b, b, Troops) += int16_t(lost_troops_b);
-                s9300[b] -= int16_t(lost_troops_b);
+                army_reserves[b] -= int16_t(lost_troops_b);
             }
         }
     }
 }
 
-// 1b92:12ed — n offers Israel peace if hard pressed (sa15e[n] = 1).
+// 1b92:12ed — n offers Israel peace if hard pressed (peace_offer[n] = 1).
 void peace_offer_check(int n) {
-    int pressure = s98a0[n] > 2 ? 2 : 0;
+    int pressure = front_line[n] > 2 ? 2 : 0;
     for (int i = 0; i < 7; ++i) {
         if (border(n, i) == 1 && nation_status[i] != 10) {
             if (i < n && (relations(n, i) == 1 || relations(n, i) == 2)) ++pressure;
@@ -150,13 +150,13 @@ void peace_offer_check(int n) {
     if (nation_status[n] > 2 && nation_status[n] < 8) ++pressure;
     // The original reuses its loop index (now 7) here; docs/ORIGINAL_BUGS.md #4.
     if (double(forces(n, Israel, Troops)) * 1.5 < double(forces(Israel, n, Troops))) pressure += 2;
-    if (pressure > 2) sa15e[n] = 1;
+    if (pressure > 2) peace_offer[n] = 1;
 }
 
 void progress_dot() {
-    sys::gfx_moveto(status_bar_x, 0x12e);
+    sys::gfx_moveto(progress_dot_x, 0x12e);
     sys::gfx_text_small(ds.str(0x18f0));  // "?"
-    status_bar_x += 10;
+    progress_dot_x += 10;
 }
 
 // 1b92:1993 — each point of air superiority costs the other side tanks, light tanks and troops;
@@ -262,9 +262,9 @@ void ground_battle(int a, int b) {
         if (light_hit_a < tanks_b) tanks_b -= light_hit_a;
         if (troops_a / 100 <= light_b) light_b -= troops_a / 100;
         if (troops_b / 100 <= light_a) light_a -= troops_b / 100;
-        int d = nation_status[a] - s98c2[a];
+        int d = nation_status[a] - morale[a];
         int strength_a = d < 2 ? random(troops_a) : random(troops_a / d);
-        d = nation_status[b] - s98c2[b];
+        d = nation_status[b] - morale[b];
         int strength_b = d < 2 ? random(troops_b) : random(troops_b / d);
         int diff = (strength_b - strength_a) / 10;
         if (diff > 0) troops_a -= diff;
@@ -289,18 +289,18 @@ void ground_battle(int a, int b) {
     forces(b, a, LightTanks) = int16_t(light_b);
 }
 
-// 1000:5ec3 — Israel's ordered nuclear strike (sa12e == 5), or a nuclear power losing a war.
+// 1000:5ec3 — Israel's ordered nuclear strike (strike_order == 5), or a nuclear power losing a war.
 void consider_nuclear(int a, int b) {
-    if (sa12e[b] == 5) nuclear_strike(Israel, b);
+    if (strike_order[b] == 5) nuclear_strike(Israel, b);
     if (nuclear[a] == 10 && a != Israel) {
         int war = at_war(a, b);
-        if ((war > 6 && nation_status[a] > 5) || (sa04e[b] <= sa04e[a] && nuclear[b] < 8 && war > 2))
+        if ((war > 6 && nation_status[a] > 5) || (prestige[b] <= prestige[a] && nuclear[b] < 8 && war > 2))
             nuclear_strike(a, b);
     }
     if (nuclear[b] == 10) {
         int war = at_war(a, b);
         if ((war > 6 && nation_status[b] > 5) || (a == Israel && nuclear[Israel] < 10) ||
-            (sa04e[a] <= sa04e[b] && nuclear[a] < 8 && war > 2))
+            (prestige[a] <= prestige[b] && nuclear[a] < 8 && war > 2))
             nuclear_strike(b, a);
     }
 }
@@ -310,18 +310,18 @@ void consider_nuclear(int a, int b) {
 void nuclear_strike(int a, int b) {
     int r = random(5);
     forces(b, a, Troops) = 0;
-    if (a == Israel) sb264 += 100;
+    if (a == Israel) us_disapproval += 100;
     headline(word_at(uint16_t(0x4d76 + 2 * (r - 1))), a, b);
     headline(word_at(uint16_t(0x4d76 + 2 * r)), a, b);
     news_item(word_at(0x4d76), a, b);
-    if ((nuclear[a] == 10 && nuclear[b] == 10) || sb262 < 0x87) {
+    if ((nuclear[a] == 10 && nuclear[b] == 10) || middle_east_calm < 0x87) {
         if (a == Israel || b == Israel) endgame::game_over(3, 2, 2, 0);
         else endgame::game_over(4, 2, 2, 0);
     }
 }
 
 // 1d93:0599 — kind 0: troop losses, 1: tank losses, 2: front line moved. Also sets the war
-// status text shown at the border (sa1d2) for Israel's wars.
+// status text shown at the border (war_status_text) for Israel's wars.
 void casualty_news(int a, int b, int kind, int amount) {
     uint16_t big = 0, small = 0;
     int war = b < a ? at_war(a, b) : at_war(b, a);
@@ -375,19 +375,19 @@ void casualty_news(int a, int b, int kind, int amount) {
     }
     if ((a == Israel || b == Israel) && kind == 0) {
         if (a == Israel) {
-            sa1d2[b] = word_at(0x6c3e);
-            if (amount > 0x32) sa1d2[b] = word_at(0x6c40);
+            war_status_text[b] = word_at(0x6c3e);
+            if (amount > 0x32) war_status_text[b] = word_at(0x6c40);
         }
-        if (a == Israel && amount > 0x96) sa1d2[b] = word_at(0x6c42);
-        if (a == Israel && amount > 0xfa) sa1d2[b] = word_at(0x6c44);
-        if (a == Israel && amount > 0x1c2) sa1d2[b] = word_at(0x6c46);
-        if (a == Israel && amount > 600) sa1d2[b] = word_at(0x6c48);
+        if (a == Israel && amount > 0x96) war_status_text[b] = word_at(0x6c42);
+        if (a == Israel && amount > 0xfa) war_status_text[b] = word_at(0x6c44);
+        if (a == Israel && amount > 0x1c2) war_status_text[b] = word_at(0x6c46);
+        if (a == Israel && amount > 600) war_status_text[b] = word_at(0x6c48);
         if (b == Israel) {
-            sa1d2[a] = word_at(0x6c4a);
-            if (amount > 100) sa1d2[a] = word_at(0x6c4c);
+            war_status_text[a] = word_at(0x6c4a);
+            if (amount > 100) war_status_text[a] = word_at(0x6c4c);
         }
-        if (b == Israel && amount > 300) sa1d2[a] = word_at(0x6c4e);
-        if (b == Israel && amount > 500) sa1d2[a] = word_at(0x6c50);
+        if (b == Israel && amount > 300) war_status_text[a] = word_at(0x6c4e);
+        if (b == Israel && amount > 500) war_status_text[a] = word_at(0x6c50);
     }
     if (big != 0) headline(big, a, b);
     if (small != 0) news_item(small, a, b);
@@ -403,11 +403,11 @@ void conquest_check(int w, int l, int b, int a, int fights) {
         w = b;
         l = a;
     }
-    if (a == Israel && s98a0[b] > 4 && fights != 0) {
+    if (a == Israel && front_line[b] > 4 && fights != 0) {
         w = Israel;
         l = b;
     }
-    if (a == Israel && s98a0[b] < -4 && fights != 0) {
+    if (a == Israel && front_line[b] < -4 && fights != 0) {
         w = b;
         l = Israel;
     }
@@ -417,8 +417,8 @@ void conquest_check(int w, int l, int b, int a, int fights) {
         endgame::game_over(2, 0, 4, b);  // Israel overrun
     }
     nation_status[w] = 0;
-    if (sa04e[w] < 10) ++sa04e[w];
-    budget[l] = int16_t(w);  // a fallen nation's GNP slot records its conqueror
+    if (prestige[w] < 10) ++prestige[w];
+    gnp[l] = int16_t(w);  // a fallen nation's GNP slot records its conqueror
     conquest_news(w, l);
     ai::collapse(l);
     for (int k = 1; k < 9; ++k) {
@@ -443,7 +443,7 @@ void conquest_news(int w, int l) {
     uint16_t big = word_at(0x4e6a);
     if (wars > 1) big = word_at(0x4e68);
     if (l == Lebanon) big = word_at(0x4e72);
-    if (sa12e[l] == 5) big = word_at(0x4e70);
+    if (strike_order[l] == 5) big = word_at(0x4e70);
     headline(big, w, l);
     news_item(word_at(0x4e6c), w, l);
     news_item(word_at(0x4e6e), w, l);
@@ -521,10 +521,10 @@ void mobilise(int a, int b) {
 void air_strikes() {
     int order[9];
     int count = 0;
-    sb26e = 7;  // no damage to report
+    strike_damage = 7;  // no damage to report
     for (int p = 10; p > 0; --p)
         for (int n = 0; n < 8; ++n)
-            if (sa04e[n] == p) order[count++] = n;
+            if (prestige[n] == p) order[count++] = n;
     for (int i = 0; i < 8 && i < count; ++i) {
         int n = order[i];
         if (n == Israel) israeli_strikes();
@@ -547,7 +547,7 @@ void air_strikes() {
                 if (r == 7 && forces(target, target, Fighters) > 2) forces(target, target, Fighters) -= 2;
                 if (r == 8 && forces(target, target, Bombers) > 1) forces(target, target, Bombers) -= 1;
                 strike_news(1, 3, n, target);
-                if (target == Israel) sb26e = int16_t(n);
+                if (target == Israel) strike_damage = int16_t(n);
             }
             if (r > 8 && r < 11) {
                 if (r == 9 && forces(target, target, MainBattleTanks) > 0)
@@ -555,10 +555,10 @@ void air_strikes() {
                 // Bug #21: in the original r == 9 also loses 3 bombers.
                 if (r == 10 && forces(target, target, Bombers) < 6) forces(target, target, Bombers) = 0;
                 else if (!fixes::fix(21) || r == 10) forces(target, target, Bombers) -= 3;
-                if (sa04e[n] < 0xb) ++sa04e[n];
+                if (prestige[n] < 0xb) ++prestige[n];
                 --rel;
                 strike_news(1, 4, n, target);
-                if (target == Israel) sb26e = int16_t(n + 100);
+                if (target == Israel) strike_damage = int16_t(n + 100);
             }
         }
         if (border(n, target) != 0 && roll == 3 && forces(n, n, Bombers) > 2 && nation_status[n] != 10 &&
@@ -569,20 +569,20 @@ void air_strikes() {
                 forces(n, n, Bombers) -= 3;
                 strike_news(2, 1, n, target);
             } else {
-                budget[target] -= int16_t(r * 0x32);
-                if (r > 7 && (target == Iran || target == Iraq)) budget[target] -= 0x96;
-                if ((target == Syria || target == Lebanon || target == Jordan) && budget[target] < 0x32)
-                    budget[target] = 0x32;
+                gnp[target] -= int16_t(r * 0x32);
+                if (r > 7 && (target == Iran || target == Iraq)) gnp[target] -= 0x96;
+                if ((target == Syria || target == Lebanon || target == Jordan) && gnp[target] < 0x32)
+                    gnp[target] = 0x32;
                 if ((target == Israel || target == Egypt || target == Iran || target == Iraq) &&
-                    budget[target] < 500)
-                    budget[target] = 500;
+                    gnp[target] < 500)
+                    gnp[target] = 500;
                 --rel;
                 strike_news(2, r < 8 ? 3 : 4, n, target);
-                if (target == Israel) sb26e = int16_t(n + 200);
+                if (target == Israel) strike_damage = int16_t(n + 200);
             }
         }
         if (border(n, target) != 0 && roll == 4 && forces(n, n, Bombers) > 2 && nation_status[n] != 10 &&
-            nation_status[target] != 10 && (rel == 2 || rel == 3) && sa04e[n] < 4) {
+            nation_status[target] != 10 && (rel == 2 || rel == 3) && prestige[n] < 4) {
             int r = random(10);
             if (forces(Israel, Israel, EarlyWarning) != 0 && target == Israel) r -= 2;
             if (r > 6 && nation_status[target] < 9) ++nation_status[target];
@@ -591,7 +591,7 @@ void air_strikes() {
             if (r > 6 && r < 9) strike_news(3, 3, n, target);
             if (r == 10) strike_news(3, 4, n, target);
             if (r > 6) --rel;
-            if (target == Israel && r > 6) sb26e = int16_t(n + 300);
+            if (target == Israel && r > 6) strike_damage = int16_t(n + 300);
         }
         if (rel < 1) rel = 1;
         if (n < target) relations(target, n) = int16_t(rel);
@@ -599,52 +599,52 @@ void air_strikes() {
     }
 }
 
-// 1b92:0714 — Israel's strike orders (sa12e: 1 air bases, 2 military, 3 civilian, 4 nuclear
+// 1b92:0714 — Israel's strike orders (strike_order: 1 air bases, 2 military, 3 civilian, 4 nuclear
 // facilities); then the orders are cleared.
 void israeli_strikes() {
     for (int n = 0; n < 7; ++n) {
         int r = random(10);
-        if (sa12e[n] == 1 && forces(Israel, Israel, Bombers) != 0) {
+        if (strike_order[n] == 1 && forces(Israel, Israel, Bombers) != 0) {
             if (forces(Israel, Israel, Bombers) < 3) r -= 5;
             if (r < 2) {
                 lose_bombers();
                 strike_news(2, 1, Israel, n);
             }
             if (r > 1 && r < 11) {
-                sb264 += 10;
-                budget[n] -= int16_t(r);
-                if ((n == Egypt || n == Lebanon || n == Jordan) && budget[n] < 0x1e) budget[n] = 0x1e;
-                if (n == Syria && budget[Syria] < 0x32) budget[Syria] = 0x32;
+                us_disapproval += 10;
+                gnp[n] -= int16_t(r);
+                if ((n == Egypt || n == Lebanon || n == Jordan) && gnp[n] < 0x1e) gnp[n] = 0x1e;
+                if (n == Syria && gnp[Syria] < 0x32) gnp[Syria] = 0x32;
                 strike_news(2, r < 6 ? 3 : 4, Israel, n);
                 worsen_relation_with_israel(n);
             }
         }
-        if (sa12e[n] == 2 && forces(Israel, Israel, Bombers) != 0) {
+        if (strike_order[n] == 2 && forces(Israel, Israel, Bombers) != 0) {
             if (forces(Israel, Israel, Bombers) < 3) r -= 5;
             if (r < 3) {
                 lose_bombers();
                 strike_news(1, 1, Israel, n);
             }
             if (r > 2 && r < 6) {
-                sb264 += 10;
+                us_disapproval += 10;
                 if (r == 4 && forces(n, n, Fighters) > 2) forces(n, n, Fighters) -= 2;
                 if (r == 5 && forces(n, n, Bombers) > 1) forces(n, n, Bombers) -= 1;
                 worsen_relation_with_israel(n);
                 strike_news(1, 3, Israel, n);
             }
             if (r > 5 && r < 11) {
-                sb264 += 0xc;
+                us_disapproval += 0xc;
                 if (r > 5 && r < 10 && forces(n, n, MainBattleTanks) > 0)
                     forces(n, n, MainBattleTanks) = int16_t(forces(n, n, MainBattleTanks) / 2);
                 if (r == 10 && forces(n, n, Bombers) < 6) forces(n, n, Bombers) = 0;
                 else if (!fixes::fix(21) || r == 10) forces(n, n, Bombers) -= 3;  // bug #21: not for 6..9
-                if (sa04e[Israel] < 0xb) ++sa04e[Israel];
+                if (prestige[Israel] < 0xb) ++prestige[Israel];
                 worsen_relation_with_israel(n);
                 strike_news(1, 4, Israel, n);
             }
         }
-        if (sa12e[n] == 3 && forces(Israel, Israel, Bombers) != 0) {
-            s9300[n] -= int16_t(r);
+        if (strike_order[n] == 3 && forces(Israel, Israel, Bombers) != 0) {
+            army_reserves[n] -= int16_t(r);
             if (nation_status[n] < 9) ++nation_status[n];
             if (r < 3) {
                 lose_bombers();
@@ -652,24 +652,24 @@ void israeli_strikes() {
             }
             if (r > 2) {
                 worsen_relation_with_israel(n);
-                sb264 += 0x1e;
+                us_disapproval += 0x1e;
                 strike_news(3, r < 6 ? 3 : 4, Israel, n);
             }
         }
-        if (sa12e[n] == 4 && forces(Israel, Israel, Bombers) != 0) {
+        if (strike_order[n] == 4 && forces(Israel, Israel, Bombers) != 0) {
             if (r < 3) {
                 lose_bombers();
                 strike_news(4, 1, Israel, n);
             } else {
                 if (nuclear[n] < 10) nuclear[n] -= 3;
                 if (fixes::fix(20) && nuclear[n] < 0) nuclear[n] = 0;  // bug #20: no negative levels
-                if (sa04e[Israel] < 10) ++sa04e[Israel];
+                if (prestige[Israel] < 10) ++prestige[Israel];
                 strike_news(4, 4, Israel, n);
                 worsen_relation_with_israel(n);
             }
         }
     }
-    for (int n = 0; n < 7; ++n) sa12e[n] = 0;
+    for (int n = 0; n < 7; ++n) strike_order[n] = 0;
 }
 
 // 1d93:0931 — kind: 1 military, 2 industrial/air base, 3 civilian, 4 nuclear facility;

@@ -40,11 +40,11 @@ void foreign_office_advice() {
     uint16_t tmpl = 0;
     std::strcpy(ds.str(kWindowText), ds.str(0x240e));  // "Good Morning." (skipping '#')
     if (turn_count == 1) advice(8);
-    if (sb262 < 0x9c && sb262 > 0x96) advice(1);
-    if (sb264 > 0x32) advice(0);
-    if (sb262 < 0x97 && sb262 > 0x8c) advice(0xb);
-    if (sb266 == 6 && sb26a == 0) advice(9);
-    if (sb26e != 7) advice(6);
+    if (middle_east_calm < 0x9c && middle_east_calm > 0x96) advice(1);
+    if (us_disapproval > 0x32) advice(0);
+    if (middle_east_calm < 0x97 && middle_east_calm > 0x8c) advice(0xb);
+    if (west_bank_tactics == 6 && land_for_peace == 0) advice(9);
+    if (strike_damage != 7) advice(6);
     for (int a = 1; a < 7; ++a)
         for (int b = 0; b < a; ++b) {
             if (nation_status[a] == 10 || nation_status[b] == 10) continue;
@@ -62,31 +62,31 @@ void foreign_office_advice() {
         }
     for (int n = 0; n < 7; ++n) {
         if (nation_status[n] == 10) continue;
-        if (nation_status[n] > 6 && sa11e[n] < 10 && border(Israel, n) == 1 && sa0ee[n] == 0)
+        if (nation_status[n] > 6 && insurgency[n] < 10 && border(Israel, n) == 1 && insurgency_directive[n] == 0)
             tmpl = word_at(0x2400);
         if (forces(Israel, n, 0) != 0 && relations(Israel, n) < 4 && relations(Israel, n) > 1)
             tmpl = word_at(0x2402);
-        if (turn_count != 1 && relations(Israel, n) == 7 && sa0de[n] == 0 && sa0ee[n] == 0)
+        if (turn_count != 1 && relations(Israel, n) == 7 && relation_directive[n] == 0 && insurgency_directive[n] == 0)
             tmpl = word_at(0x2404);
-        if (sa0de[n] == 0 && relations(Israel, n) == 2) tmpl = word_at(0x2406);
-        if (at_war(Israel, n) == 0 && sa0de[n] == 0 && relations(Israel, n) == 1)
+        if (relation_directive[n] == 0 && relations(Israel, n) == 2) tmpl = word_at(0x2406);
+        if (at_war(Israel, n) == 0 && relation_directive[n] == 0 && relations(Israel, n) == 1)
             tmpl = word_at(0x2408);
         if (tmpl != 0) {
             advice_about(tmpl, n, Israel);
             tmpl = 0;
         }
     }
-    if (sb264 > 0x22 && sb264 < 0x32 && warned_world_opinion == 0) {
+    if (us_disapproval > 0x22 && us_disapproval < 0x32 && warned_world_opinion == 0) {
         advice(10);
         warned_world_opinion = 1;
     }
-    if (sb264 > 0x31 && warned_world_opinion != 2) {
+    if (us_disapproval > 0x31 && warned_world_opinion != 2) {
         advice(0xd);
         warned_world_opinion = 2;
     }
-    if (sb274 == 6 && sb262 < 0x96) advice(7);
+    if (month_of_year == 6 && middle_east_calm < 0x96) advice(7);
     for (int n = 0; n < 7; ++n) {
-        if (sa15e[n] == 1 && sa0de[n] == 0 && border(Israel, n) == 1) tmpl = word_at(0x240a);
+        if (peace_offer[n] == 1 && relation_directive[n] == 0 && border(Israel, n) == 1) tmpl = word_at(0x240a);
         if (relations(Israel, n) < 4 && nuclear[Israel] < 10 && nuclear[n] == 10) tmpl = word_at(0x240c);
         if (tmpl != 0) {
             advice_about(tmpl, n, Israel);
@@ -113,9 +113,9 @@ void nation_affairs(int n) {
         std::strcpy(text, ds.str(0x242c));  // "|"
         std::strcat(text, ds.str(nation_adjective[n]));
         std::strcat(text, ds.str(0x242e));  // " prestige: "
-        std::strcat(text, ds.str(word_at(uint16_t(0x1098 + 2 * sa04e[n]))));
+        std::strcat(text, ds.str(word_at(uint16_t(0x1098 + 2 * prestige[n]))));
         std::strcat(text, ds.str(0x243a));  // ".|"
-        std::strcpy(lines, ds.str(sa1e2[n]));
+        std::strcpy(lines, ds.str(digest_part[n]));
         int len = int(std::strlen(lines));
         if (len > 200) std::strcpy(text, ds.str(0x243d));  // "|"
         if (len != 0 && len < 0x5c) ui::text_window(0x140, 0x82, 0x276, 0xc3, title, lines, text);

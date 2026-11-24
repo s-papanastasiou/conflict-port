@@ -125,7 +125,7 @@ int main() {
                     fresh(seed);
                     nuclear[Syria] = 1;
                     forces(Israel, Israel, Bombers) = 20;
-                    sa12e[Syria] = 4;
+                    strike_order[Syria] = 4;
                     war::israeli_strikes();
                 },
                 [] { return int(nuclear[Syria]); });
@@ -152,7 +152,7 @@ int main() {
             [] {
                 fresh();
                 at_war(Israel, Syria) = 4;
-                s98a0[Syria] = 5;
+                front_line[Syria] = 5;
                 border::border_report(Syria);
             },
             [] { return int(std::strlen(ds.str(0x33ae))); });

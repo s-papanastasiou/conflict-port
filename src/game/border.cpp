@@ -46,7 +46,7 @@ int nation_for_choice(int choice) {
 
 // 1000:7e9c
 void strategic_action() {
-    int reserves = s9300[Israel];
+    int reserves = army_reserves[Israel];
     int choice = 0;
     int wars = 0;
     if (at_war(Israel, Egypt) != 0 && nation_status[Egypt] != 10) wars = 1;
@@ -61,7 +61,7 @@ void strategic_action() {
     affairs::overlay_israel();
     while (choice < 5) {
         std::strcpy(title, ds.str(0x3642));  // "National Command Headquarters"
-        if (wars == 0 && sb26e == 7) {
+        if (wars == 0 && strike_damage == 7) {
             int r = crt::random(6);
             if (r > 3) std::strcpy(text, ds.str(0x3660));  // "The generals are itching for action."
             if (r == 1) std::strcpy(text, ds.str(0x3685));  // "Our troops want to do some marching..."
@@ -74,30 +74,30 @@ void strategic_action() {
             std::strcat(text, ds.str(0x371f));  // "This could over stretch our defences..."
         }
         if (wars > 2) std::strcpy(text, ds.str(0x3747));  // "We are now surounded by enemy attack.This coul…"
-        if (sb26e != 7) {  // damage from enemy strikes: 100s digit = kind, rest = nation
-            if (sb26e < 100) {
+        if (strike_damage != 7) {  // damage from enemy strikes: 100s digit = kind, rest = nation
+            if (strike_damage < 100) {
                 std::strcpy(text, ds.str(0x3785));  // "We received light military damage from "
-                std::strcat(text, ds.str(nation_adjective[sb26e]));
+                std::strcat(text, ds.str(nation_adjective[strike_damage]));
                 std::strcat(text, ds.str(0x37ad));  // " strike attacks."
             }
-            if (sb26e > 99 && sb26e < 200) {
+            if (strike_damage > 99 && strike_damage < 200) {
                 std::strcpy(text, ds.str(0x37be));  // "We received heavy equipment loss from "
-                std::strcat(text, ds.str(nation_adjective[sb26e - 100]));
+                std::strcat(text, ds.str(nation_adjective[strike_damage - 100]));
                 std::strcat(text, ds.str(0x37e5));  // " strike attacks."
             }
-            if (sb26e > 199 && sb26e < 300) {
+            if (strike_damage > 199 && strike_damage < 300) {
                 std::strcpy(text, ds.str(0x37f6));  // "Some industrial damage was done by recent "
-                std::strcat(text, ds.str(nation_adjective[sb26e - 200]));
+                std::strcat(text, ds.str(nation_adjective[strike_damage - 200]));
                 std::strcat(text, ds.str(0x3821));  // " strike bombings."
             }
-            if (sb26e > 299) {
+            if (strike_damage > 299) {
                 std::strcpy(text, ds.str(0x3833));  // "Many innocent civilians have been hit by the r…"
-                std::strcat(text, ds.str(nation_adjective[sb26e - 300]));
+                std::strcat(text, ds.str(nation_adjective[strike_damage - 300]));
                 std::strcat(text, ds.str(0x3868));  // " bombings."
             }
             if (nation_status[Israel] > 2) std::strcat(text, ds.str(0x3873));  // "We demand a counter strike!"
         }
-        if (sb26e == 7) {
+        if (strike_damage == 7) {
             for (int n = 0; n < 7; ++n) {
                 if (relations(Israel, n) == 2 && nation_status[n] < 10 && border_brigades[n] == 0) {
                     std::strcpy(lines, ds.str(0x388f));  // "|We should prepare a reception|party for any "
@@ -142,8 +142,8 @@ void strategic_action() {
             border_command(choice);
             int n = nation_for_choice(choice);
             std::strcpy(lines, ds.str(0x39db));  // ""
-            if (sa12e[n] != 0) std::strcpy(lines, ds.str(0x39dc));  // commend your strength
-            if (sa12e[n] == 5) std::strcpy(lines, ds.str(0x3a16));  // commend your courage
+            if (strike_order[n] != 0) std::strcpy(lines, ds.str(0x39dc));  // commend your strength
+            if (strike_order[n] == 5) std::strcpy(lines, ds.str(0x3a16));  // commend your courage
         }
     }
 }
@@ -212,7 +212,7 @@ void border_command(int choice) {
     std::strcpy(title, ds.str(nation_adjective[n]));
     std::strcat(title, ds.str(0x3a76));  // " border command report"
     std::strcpy(text, ds.str(0x3a8e));  // "<"
-    if (at_war(Israel, n) != 0) std::strcat(text, ds.str(sa1d2[n]));  // war status
+    if (at_war(Israel, n) != 0) std::strcat(text, ds.str(war_status_text[n]));  // war status
     if (at_war(Israel, n) == 0) affairs::overlay_israel();
     std::strcat(text, ds.str(border_report(n)));
     std::strcat(text, ds.str(0x3a90));  // ">"
@@ -246,20 +246,20 @@ void border_command(int choice) {
             case 1: post_brigade(n); break;
             case 2:
                 mass_on_border(n);
-                sb264 += 5;
+                us_disapproval += 5;
                 break;
             case 3: {  // provoke: relations broken off
-                s98a0[n] += int16_t(relations(Israel, n) + 1);
+                front_line[n] += int16_t(relations(Israel, n) + 1);
                 relations(Israel, n) = 1;
                 if (rel != 1) ai::relation_news(Israel, n);
                 int r = relations(Israel, n);
-                sb264 += int16_t(r * 5 + 10);
-                sb276 += int16_t(r + 5);
+                us_disapproval += int16_t(r * 5 + 10);
+                acts_of_violence += int16_t(r + 5);
                 break;
             }
-            case 4: case 5: case 6: case 7:  // strikes (sa12e = 1..4)
-                sa12e[n] = int16_t(order - 3);
-                sb276 += order - 3 == 4 ? 4 : 2;
+            case 4: case 5: case 6: case 7:  // strikes (strike_order = 1..4)
+                strike_order[n] = int16_t(order - 3);
+                acts_of_violence += order - 3 == 4 ? 4 : 2;
                 break;
             case 8: pull_back(n); break;
             case 9: match_enemy(n); break;
@@ -279,9 +279,9 @@ void border_command(int choice) {
             case 5: commit_all(n); break;
             case 6: withdraw_brigade(n); break;
             case 7:  // nuclear strike, confirmed
-                sa12e[n] = 5;
-                if (ui::menu_popup(0xdc, 0x32, 0x1a4, 0x82, menu(0x0cee), 0) == 2) sa12e[n] = 0;
-                else sb276 += 10;
+                strike_order[n] = 5;
+                if (ui::menu_popup(0xdc, 0x32, 0x1a4, 0x82, menu(0x0cee), 0) == 2) strike_order[n] = 0;
+                else acts_of_violence += 10;
                 gfx_restore_rect(0xdc, 0x1a4, 0x57, 0xe3);
                 break;
             case 8: border_order(n) = 0; break;
@@ -367,7 +367,7 @@ uint16_t border_report(int n) {
         font_small = font_extra;
         gfx_text_small(bar);
         uint16_t fg = fg_colour;
-        if (front_shown(n) != s98a0[n]) {
+        if (front_shown(n) != front_line[n]) {
             for (int i = 0; i < 8; ++i) {
                 fg_colour = 15;
                 for (int r = 0; r < 7; ++r) {
@@ -386,11 +386,11 @@ uint16_t border_report(int n) {
         for (int r = 0; r < 7; ++r) gfx_fill_rect_row(0x6c, 0xd2, int(double(r) + 322.0), 1);
         fg_colour = fg;
         std::strcpy(bar, ds.str(0x352b));  // "=========="
-        place(s98a0[n]);
+        place(front_line[n]);
         gfx_moveto(0x6c, 0x142);
         gfx_text_small(bar);
         font_small = font_etech;
-        front_shown(n) = s98a0[n].get();
+        front_shown(n) = front_line[n].get();
     }
     if (at_war(Israel, n) == 0) {
         std::strcpy(report, ds.str(0x3536));  // "The "

@@ -34,7 +34,7 @@ void nation_turn(int n) {
         collapse(n);
         return;
     }
-    int unrest = sa11e[n], instability = nation_status[n], control = sa04e[n];
+    int unrest = insurgency[n], instability = nation_status[n], control = prestige[n];
     if (random(10) < (unrest + instability) - control &&
         (at_war(Israel, n) == 0 || nation_status[n] != 9)) {
         ++nation_status[n];
@@ -44,7 +44,7 @@ void nation_turn(int n) {
         collapse(n);
         return;
     }
-    treasury[n] = int16_t(int(double(float(double(sa03e[n]))) / 100.0 * double(budget[n]) +
+    treasury[n] = int16_t(int(double(float(double(defence_share[n]))) / 100.0 * double(gnp[n]) +
                              double(treasury[n])));
     for (int j = 0; j < 8; ++j) {
         if (fixes::fix(5) && j == n) continue;  // bug #5: no stale relation for itself
@@ -70,7 +70,7 @@ void nation_turn(int n) {
         }
         if (rival[n] == Israel && relations(Israel, n) < 3 && forces(n, Israel, 0) != 0 &&
             at_war(Israel, n) == 0) {
-            s98a0[n] -= 2;
+            front_line[n] -= 2;
             relations(Israel, n) = 1;
         }
     }
@@ -88,7 +88,7 @@ void nation_turn(int n) {
         }
         if (j != Israel && j != rival[n] && n != rival[j] && nation_status[j] < 8 && border(n, j) != 0 &&
             g_stale_relation > 6 && n != j) {
-            if (sa04e[j] < sa04e[n] || (sa04e[n] == sa04e[j] && budget[j] < budget[n]))
+            if (prestige[j] < prestige[n] || (prestige[n] == prestige[j] && gnp[j] < gnp[n]))
                 pressure(n, j);
         }
     }
@@ -97,7 +97,7 @@ void nation_turn(int n) {
         case 10:
             break;
         case 1: case 2: case 3: case 4: case 5: case 6:
-            if (treasury[n] > 50 && sa04e[n] > 3) {
+            if (treasury[n] > 50 && prestige[n] > 3) {
                 treasury[n] -= 50;
                 ++nuclear[n];
             }
@@ -138,10 +138,10 @@ void nation_turn(int n) {
 // 1000:58be
 void collapse(int n) {
     uint16_t big = 0;
-    if (sa12e[n] != 5) big = word_at(0x2484);
+    if (strike_order[n] != 5) big = word_at(0x2484);
     nation_status[n] = 10;
-    sa04e[n] = 0;
-    sa15e[n] = 0;
+    prestige[n] = 0;
+    peace_offer[n] = 0;
     withdraw_forces(n);
     for (int i = 0; i < 8; ++i) {
         if (n < i) at_war(i, n) = 0;
@@ -156,8 +156,8 @@ void withdraw_forces(int n) {
     for (int e = 0; e < 8; ++e)
         for (int k = 0; k < 9; ++k) {
             if (e == Israel && k == 0) {
-                s98b0[7] += s98b0[n].get();
-                s98b0[n] = 0;
+                border_brigades[7] += border_brigades[n].get();
+                border_brigades[n] = 0;
             }
             forces(e, e, k) += forces(e, n, k).get();
             forces(e, n, k) = 0;
@@ -196,14 +196,14 @@ void choose_rival(int n) {
 // 1000:3897 — b is n's rival: n courts it and set the relation to r, eased by borders
 // and relative strength.
 void adjust_relation(int a, int b, int r) {
-    if (sa11e[b] < 10) {
+    if (insurgency[b] < 10) {
         treasury[a] -= 2;
-        ++sa11e[b];
+        ++insurgency[b];
     }
-    if (sa04e[b] <= sa04e[a] && border(a, b) == 1 && r > 1) --r;
-    if (sa04e[a] < sa04e[b] && border(a, b) == 1 && r > 2) --r;
-    if (sa04e[b] <= sa04e[a] && border(a, b) == 2 && r > 4) --r;
-    if (sa04e[a] < sa04e[b] && border(a, b) == 0 && r > 5) --r;
+    if (prestige[b] <= prestige[a] && border(a, b) == 1 && r > 1) --r;
+    if (prestige[a] < prestige[b] && border(a, b) == 1 && r > 2) --r;
+    if (prestige[b] <= prestige[a] && border(a, b) == 2 && r > 4) --r;
+    if (prestige[a] < prestige[b] && border(a, b) == 0 && r > 5) --r;
     if (b < a && relations(a, b) != r) {
         relations(a, b) = int16_t(r);
         relation_news(a, b);
@@ -220,7 +220,7 @@ void pressure(int a, int b) {
     if (r < 10 && treasury[a] > 100) {
         treasury[a] -= 100;
         treasury[b] += 100;
-        if (r == 9 && sa04e[a] < 10) ++sa04e[a];
+        if (r == 9 && prestige[a] < 10) ++prestige[a];
         if (r == 9) rival[b] = rival[a].get();
         if (b < a) ++relations(a, b);
         if (a < b) ++relations(b, a);
@@ -321,18 +321,18 @@ void instability_news(int n) {
     if (n == Israel) {
         int r = random(2);
         if (nation_status[Israel] > 1) {
-            if (sb26a == 0) big = word_at(uint16_t(0x6048 + 2 * (nation_status[Israel] * 2 + r - 5)));
-            if (sb26a == 1) {
+            if (land_for_peace == 0) big = word_at(uint16_t(0x6048 + 2 * (nation_status[Israel] * 2 + r - 5)));
+            if (land_for_peace == 1) {
                 big = word_at(uint16_t(0x6286 + 2 * (nation_status[Israel] - 1)));
                 if (at_war(Israel, Egypt) != 0 && at_war(Israel, Egypt) < 4) big = word_at(0x6286);
             }
         }
     }
-    if (sa13e[n] == 12 || sa13e[n] == 13) {
+    if (faction[n] == 12 || faction[n] == 13) {
         int r = random(2);
         big = word_at(uint16_t(0x5d9c + 2 * (r - 1)));
     }
-    if (n != Israel && sa13e[n] < 7 && nation_status[n] > 4) {
+    if (n != Israel && faction[n] < 7 && nation_status[n] > 4) {
         int r = random(4);
         big = word_at(uint16_t(0x610c + 2 * (r - 1)));
     }
@@ -356,8 +356,8 @@ void event_news(int kind) {
     }
     if (kind == 3) {
         big = word_at(uint16_t(0x7732 + 2 * k));
-        if (sb264 > 0x14) big = word_at(0x7738);
-        if (sb264 > 0x32) big = word_at(0x773a);
+        if (us_disapproval > 0x14) big = word_at(0x7738);
+        if (us_disapproval > 0x32) big = word_at(0x773a);
     }
     if (kind == 4) {
         big = word_at(uint16_t(0x781c + 2 * k));

@@ -130,7 +130,7 @@ void review_forces() {
     std::strcat(lines, num);
     std::strcat(lines, ds.str(0x48eb));  // " thousand troops) and "
     if (troops == 0) std::strcpy(lines, ds.str(0x4904));  // "NO troops and "
-    crt::itoa(s9300[Israel] / 10, num);
+    crt::itoa(army_reserves[Israel] / 10, num);
     std::strcat(lines, num);
     std::strcat(lines, ds.str(0x4913));  // " thousand reserves"
     auto icon = [](int force) { return ds.str(uint16_t(force_icon[force] * 0x80 + icons_cur)); };

@@ -52,12 +52,12 @@ void leadership_analysis() {
         nation_status[Lebanon] == 10)
         bonus = 100;
     if (bonus < 100 && (nation_status[Syria] == 10 || nation_status[Egypt] == 10)) bonus += 0x32;
-    int score = int16_t(((bonus + nation_status[Israel] * -8) - sb264) + sa04e[Israel] * 0x10 +
+    int score = int16_t(((bonus + nation_status[Israel] * -8) - us_disapproval) + prestige[Israel] * 0x10 +
                         turn_count * 4);
     // A collapsed nation's GNP slot holds its controlling power (7 = Israel).
-    if (budget[Lebanon] != 7) score -= 5;
-    if (budget[Jordan] != 7) score -= 10;
-    if (budget[Syria] != 7) score -= 0x19;
+    if (gnp[Lebanon] != 7) score -= 5;
+    if (gnp[Jordan] != 7) score -= 10;
+    if (gnp[Syria] != 7) score -= 0x19;
     if (turn_count < 4) score -= 0x14;
     char digits[8];
     crt::itoa(score, digits);
@@ -74,10 +74,10 @@ void leadership_analysis() {
     if (score > 0x10d && score < 0x14a) std::strcat(text, ds.str(0x5441));  // "inspired !"
     if (score > 0x149 && score < 400) std::strcat(text, ds.str(0x544c));  // "superb !"
     if (score > 399) std::strcat(text, ds.str(0x5455));  // " amazing !!"
-    if (nation_status[Syria] == 10 && budget[Syria] == 7) held = 1;
-    if (nation_status[Lebanon] == 10 && budget[Lebanon] == 7) ++held;
-    if (nation_status[Jordan] == 10 && budget[Jordan] == 7) ++held;
-    if (nation_status[Egypt] == 10 && budget[Egypt] == 7) ++held;
+    if (nation_status[Syria] == 10 && gnp[Syria] == 7) held = 1;
+    if (nation_status[Lebanon] == 10 && gnp[Lebanon] == 7) ++held;
+    if (nation_status[Jordan] == 10 && gnp[Jordan] == 7) ++held;
+    if (nation_status[Egypt] == 10 && gnp[Egypt] == 7) ++held;
     if (turn_count < 6) crt::sprintf(lines, ds.str(0x5461), {int(turn_count)});  // "|-You survived only %d months."
     if (turn_count > 5 && turn_count < 0xe) crt::sprintf(lines, ds.str(0x5480), {int(turn_count)});  // "|-You survived %d months in office."
     if (turn_count > 0xd && turn_count < 0x18) crt::sprintf(lines, ds.str(0x54a4), {turn_count % 12});  // "|-You survived one year and %d months."
@@ -91,32 +91,32 @@ void leadership_analysis() {
     }
     std::strcat(lines, ds.str(0x5567));  // " under Israeli control."
     std::strcat(lines, ds.str(0x557f));  // "You committed "
-    if (sb276 < 1) std::strcat(lines, ds.str(0x5590));  // "no"
-    if (sb276 > 0 && sb276 < 4) std::strcat(lines, ds.str(0x5593));  // "few"
-    if (sb276 > 3 && sb276 < 10) std::strcat(lines, ds.str(0x5597));  // "numerous"
-    if (sb276 > 10) std::strcat(lines, ds.str(0x55a0));  // "copious"
+    if (acts_of_violence < 1) std::strcat(lines, ds.str(0x5590));  // "no"
+    if (acts_of_violence > 0 && acts_of_violence < 4) std::strcat(lines, ds.str(0x5593));  // "few"
+    if (acts_of_violence > 3 && acts_of_violence < 10) std::strcat(lines, ds.str(0x5597));  // "numerous"
+    if (acts_of_violence > 10) std::strcat(lines, ds.str(0x55a0));  // "copious"
     std::strcat(lines, ds.str(0x55a8));  // " acts of violence."
     std::strcat(lines, ds.str(0x55bb));  // "Relations with the U.S. are "
-    if (sb264 < 1) std::strcat(lines, ds.str(0x55da));  // "excellent."
-    if (sb264 > 0 && sb264 < 5) std::strcat(lines, ds.str(0x55e5));  // "good."
-    if (sb264 > 4 && sb264 < 0x1e) std::strcat(lines, ds.str(0x55eb));  // "poor."
-    if (sb264 > 0x1d) std::strcat(lines, ds.str(0x55f1));  // "sour."
+    if (us_disapproval < 1) std::strcat(lines, ds.str(0x55da));  // "excellent."
+    if (us_disapproval > 0 && us_disapproval < 5) std::strcat(lines, ds.str(0x55e5));  // "good."
+    if (us_disapproval > 4 && us_disapproval < 0x1e) std::strcat(lines, ds.str(0x55eb));  // "poor."
+    if (us_disapproval > 0x1d) std::strcat(lines, ds.str(0x55f1));  // "sour."
     std::strcat(lines, ds.str(0x55f7));  // "Our Prestige ended as "
-    std::strcat(lines, ds.str(word_at(uint16_t(0x1098 + 2 * sa04e[Israel]))));
+    std::strcat(lines, ds.str(word_at(uint16_t(0x1098 + 2 * prestige[Israel]))));
     std::strcat(lines, ds.str(0x5610));  // "."
     std::strcat(lines, ds.str(0x5612));  // "Leadership Style: "
     int style = 7;
-    if (sb276 > 10) style = 1;
-    if (sb276 > 0x14) style = 0;
-    if (sb26a == 0 && sb26c == 0 && sb266 == 6 && sb276 > 8 && nation_status[Israel] > 4 &&
-        sa03e[Israel] > 0x22 && sb264 > 0x28)
+    if (acts_of_violence > 10) style = 1;
+    if (acts_of_violence > 0x14) style = 0;
+    if (land_for_peace == 0 && summit_agreement == 0 && west_bank_tactics == 6 && acts_of_violence > 8 && nation_status[Israel] > 4 &&
+        defence_share[Israel] > 0x22 && us_disapproval > 0x28)
         style = 5;
-    if (sb276 == 0 && sb264 < 10) style = 4;
-    if (sb276 < 6 && sb264 < 0x1e && nation_status[Israel] < 4 && (sb26c != 0 || sb26a != 0) &&
-        sa03e[Israel] < 0x24)
+    if (acts_of_violence == 0 && us_disapproval < 10) style = 4;
+    if (acts_of_violence < 6 && us_disapproval < 0x1e && nation_status[Israel] < 4 && (summit_agreement != 0 || land_for_peace != 0) &&
+        defence_share[Israel] < 0x24)
         style = 2;
-    if (sb276 > 0 && sb276 < 8 && sb26a == 0 && sb26c == 0 && sa04e[Israel] > 4) style = 6;
-    if (sb276 < 4 && sb26a != 0 && sb26c != 0 && sb264 < 0x1e) style = 3;
+    if (acts_of_violence > 0 && acts_of_violence < 8 && land_for_peace == 0 && summit_agreement == 0 && prestige[Israel] > 4) style = 6;
+    if (acts_of_violence < 4 && land_for_peace != 0 && summit_agreement != 0 && us_disapproval < 0x1e) style = 3;
     std::strcat(lines, ds.str(word_at(uint16_t(0x53aa + 2 * style))));
     std::strcat(lines, ds.str(0x5627));  // ".|"
     std::strcat(text, ds.str(0x562a));  // "Analysis Score:"
