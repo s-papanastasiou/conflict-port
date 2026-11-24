@@ -1,0 +1,154 @@
+# Ghidra address	name	kind(func|data)	comment	C signature (optional)
+# --- C runtime startup / process ---
+1fe0:000a	_start	func	Zortech C startup (c0): sets DS=SS=DGROUP, parses PSP cmdline, calls main
+1000:b681	main	func	title, load/new, monthly turn loop
+2186:009a	exit	func
+20a2:0174	_exit_game	func	called on Exit menu choice; wraps 20a2:00fe(0)
+1fe0:0219	_dos_terminate	func	int21 AH=4C
+# --- string / memory ---
+20d1:0000	strcpy	func		char *strcpy(char *d, char *s)
+20d3:0004	strcat	func		char *strcat(char *d, char *s)
+2169:000e	strlen	func		int strlen(char *s)
+21aa:0008	strncpy	func		char *strncpy(char *d, char *s, int n)
+2279:000c	memmove	func
+227d:000a	far_copy_from	func	(seg, src, dst, n) — movedata-like, tentative
+227d:0028	far_copy_to	func	(seg, dst, src, n) — movedata-like, tentative
+21b8:003d	malloc	func
+21b8:013b	_heap_add	func	tentative
+21e7:000c	_sbrk	func	tentative
+# --- stdio ---
+216b:0009	puts	func
+216b:004f	fread	func		int fread(void *p, int size, int n, void *fp)
+216b:00fb	fwrite	func		int fwrite(void *p, int size, int n, void *fp)
+21ae:0000	fputc	func
+2186:0007	fclose	func
+2186:005d	fopen	func		void *fopen(char *name, char *mode)
+2186:00c7	fflush	func
+2186:012c	_fopen_impl	func
+2203:000b	_flushall	func
+# --- setjmp / rand / time / long arithmetic ---
+20ba:0000	setjmp	func		int setjmp(void *jb)
+20ba:002c	longjmp	func		void longjmp(void *jb, int v)
+20ca:0003	rand	func	seed = seed*0x41C64E6D + 0x3039; return (seed>>16)&0x7FFF	int rand(void)
+20ca:002a	srand	func
+20cd:000c	dos_time_hsec	func	int21 AH=2C, returns hundredths since midnight (seeds srand)
+2094:0006	_lmul	func	DX:AX * CX:BX
+2094:003e	_uldiv	func
+2094:00a5	_ldiv	func
+# --- DOS low-level I/O (AH set in a stub just before each entry) ---
+226a:0010	_dos_write	func	int21 AH=40
+226a:0029	_dos_read	func	int21 AH=3F
+226a:0049	_dos_open	func	int21 AH=3D
+226a:0069	_dos_close	func	int21 AH=3E
+226a:009a	_dos_lseek	func	int21 AH=42
+226a:00e4	_dos_isatty	func	int21 AX=4400
+2281:0002	_dos_allocmem	func	int21 AH=48
+2281:0057	_dos_freemem	func	int21 AH=49
+2281:006c	_dos_setblock	func	int21 AH=4A
+# --- EGA driver segment 1f39 (hand-written asm). Public entries are far cdecl. ---
+# Mode 10h 640x350x16. Colours: fg = DS:b2a2, bg = DS:b2a0. Pen position DS:8370 (byte offset), DS:8372 (bit).
+1f39:0771	gfx_init	func	alloc map/picture memory, build row table, int10 mode 10h	void gfx_init(void)
+1f39:078b	gfx_load_maps	func	load MDLEAST/ISRAEL/IRAQ/IRAQ1/LIBYA/SYRIA.MP (names at DS:865e) into segs at DS:831a	int gfx_load_maps(void)
+1f39:0783	gfx_load_pictures	func	load *.DAT (names at DS:868e) into segs at DS:833c	int gfx_load_pictures(void)
+1f39:0937	gfx_draw_map	func	(map_index) RLE map -> back buffer (rows bottom-up), then copy to screen	void gfx_draw_map(int index)
+1f39:0746	gfx_draw_picture	func	(pic_index) 160x200 1bpp AND-blit at pen position	void gfx_draw_picture(int index)
+1f39:07df	gfx_draw_glyph32	func	(src) 32x8 glyph/icon at pen using fg/bg	void gfx_draw_glyph32(char *src)
+1f39:07f3	gfx_clear	func	(fill_word) clear screen	void gfx_clear(int fill)
+1f39:0801	gfx_moveto	func	(x, y) set pen position	void gfx_moveto(int x, int y)
+1f39:0813	gfx_plot	func	(x, y) set pixel in fg	void gfx_plot(int x, int y)
+1f39:0827	gfx_fill_rect_row	func	(x0, x1, y, colour_flag) horizontal span; flag 0 -> colour 0	void gfx_fill_rect_row(int x0, int x1, int y, int colour_flag)
+1f39:0858	gfx_vline	func	(y0, y1, x, colour_flag) vertical line; flag 0 -> colour 0	void gfx_vline(int y0, int y1, int x, int colour_flag)
+1f39:0889	gfx_blit_colour	func	(x, y, w, h, plane_mask, value) masked fill using screen bytes as mask	void gfx_blit_colour(int x, int y, int w, int h, int from, int to)
+1f39:08e4	gfx_text_small	func	(str) draw string with 8px font (DS:b290) at pen	void gfx_text_small(char *s)
+1f39:08f8	gfx_text_large	func	(str) draw string with 16px font (DS:b292) at pen	void gfx_text_large(char *s)
+1f39:090c	gfx_flood_fill	func	(x, y) scanline flood fill with fg	void gfx_flood_fill(int x, int y)
+1f39:091e	gfx_fill_rect	func	(x0, x1, y0, y1) rows y0..y1 via span routine	void gfx_fill_rect(int x0, int x1, int y0, int y1)
+1f39:06dd	gfx_restore_rect	func	(x0, x1, y0, y1) copy rectangle from back buffer to screen	void gfx_restore_rect(int x0, int x1, int y0, int y1)
+1f39:09e9	gfx_text_width	func	(str) pixel width of string in small font	int gfx_text_width(char *s)
+1f39:0a58	kbd_poll_ext	func	int16: returns scan code of a pending extended key, else 0	int kbd_poll_ext(void)
+# --- game: save/load ---
+1000:25b3	save_game	func	fwrite of all state globals (7372 bytes)
+1000:29ed	load_game	func	fread of all state globals
+1000:0d24	menu_popup	func	(x0,y0,x1,y1,menu_text,?) -> selected item (1-based); '?'-separated items, first = title	int menu_popup(int x0, int y0, int x1, int y1, char *text, int arg)
+1000:1044	menu_select	func	keyboard loop of menu_popup (Home/End/Up/Down/Enter, Shift-E quit, Shift-S save, Shift-B briefing)	int menu_select(int x, int y)
+1000:0444	get_key	func	blocking BIOS key read: int86(0x16) AH=0, returns scan<<8|ascii	unsigned int get_key(void)
+21d3:0015	int86	func		int int86(int intno, void *inregs, void *outregs)
+# --- globals (DS offsets) ---
+7ff0	rand_seed	data	long
+b27e	restart_jmpbuf	data	setjmp buffer used for quit/restart
+b268	turn_count	data	incremented each month	short
+b272	year	data	tentative (1999 in CONF1.SAV)	short
+b278	loaded_game_flag	data
+a4ae	news_text	data	cleared each turn	char[2500]
+ae72	report_text	data		char[1000]
+a10e	nation_status	data	value 10 skips the nation's turn (collapsed?)	short[8]
+# --- game: start-up and UI ---
+1000:0010	random	func	1 + (int)(n * rand() / 32768.0); 0 if n < 0	int random(int n)
+1000:2058	intro	func	init graphics + fonts, red screen, random one of 4 intro poems
+1000:07fc	load_fonts	func	malloc + read etech/extra/xini/xguard/xnclr+xtest
+1000:0739	calibrate_delay	func	CPU speed calibration -> float DS:b27a
+1000:0479	restore_text_mode	func	int10 AX=3
+1000:00b3	draw_panel	func	(x0,y0,x1,y1) bg box with black frame + drop shadow; y in 200-line units	void draw_panel(int x0, int y0, int x1, int y1)
+1000:0286	draw_titled_panel	func	panel + centred title on top edge	void draw_titled_panel(int x0, int y0, int x1, int y1, char *title)
+1000:0a7c	text_window	func	panel with word-wrapped text and '|'-separated extra lines	void text_window(int x0, int y0, int x1, int y1, char *title, char *text, char *lines)
+1000:0e13	menu_add_item	func	word-wrapped menu item, records its line in DS:87b4[]	void menu_add_item(int x, int y, int width, char *text)
+1000:03bd	str_overlay	func	copy src into dst at 1-based position	void str_overlay(char *dst, char *src, int pos)
+1000:03e5	squeeze_spaces	func	collapse runs of spaces into DS:874c	void squeeze_spaces(char *s)
+1000:0357	str_find4	func	4-char substring search	int str_find4(char *s, char *pat)
+1000:24c2	draw_icon_border	func	(99 = random icons) icon wall background	void draw_icon_border(int icon)
+1000:2337	title_screen	func	CONFLICT title + Get Ready/Load Game menu + copyright	void title_screen(void)
+1000:b8ab	draw_icon	func	icon with colour by index (8,10,13 red; 9,11,12 blue)	void draw_icon(char *icon)
+1000:245c	draw_status_bar	func
+# --- globals: UI ---
+b2a2	fg_colour	data
+b2a0	bg_colour	data
+b290	font_small	data	current small font pointer
+b292	font_large	data	current large font pointer (biased by -0x900)
+b294	font_etech	data
+b296	font_extra	data
+b298	font_xini	data
+b29a	font_xguard	data
+b29c	icons	data
+b29e	icons_cur	data
+b27a	delay_calibration	data	float
+87b0	menu_line	data
+87c8	menu_item_count	data
+87b4	menu_item_line	data	int[]
+b270	menu_context	data	selects menu hot keys (1 = briefing allowed, 5 = save allowed)
+# --- game state (saved). Provisional names sNNNN until their meaning is known. ---
+92f0	s92f0	data		short[8]
+9300	s9300	data		short[8]
+9310	s9310	data	8x8	short[8][8]
+9390	s9390	data		short[8]
+93a0	s93a0	data	[nation][nation][10]; [n][n][k] = own forces?	short[8][8][10]
+98a0	s98a0	data		short[8]
+98b0	s98b0	data		short[9]
+98c2	s98c2	data		short[8]
+98d2	s98d2	data		short[950]
+a03e	sa03e	data		short[8]
+a04e	sa04e	data		short[8]
+a05e	sa05e	data	8x8 lower triangle, random 4..7 at start	short[8][8]
+a0de	sa0de	data		short[8]
+a0ee	sa0ee	data		short[8]
+a0fe	sa0fe	data		short[8]
+a11e	sa11e	data		short[8]
+a12e	sa12e	data		short[8]
+a13e	sa13e	data		short[8]
+a14e	sa14e	data		short[8]
+a15e	sa15e	data		short[8]
+a16e	headline_ptr	data	near pointers into report_text (see 1000:6c39)	ushort[25]
+a1a0	sa1a0	data	near pointers into news_text?	ushort[25]
+a1d2	sa1d2	data		short[8]
+a1e2	sa1e2	data		ushort[8]
+b25a	sb25a	data		short
+b25c	headline_count	data		short
+b25e	report_text_used	data		short
+b260	sb260	data		short
+b262	sb262	data		short
+b264	sb264	data		short
+b266	sb266	data		short
+b26a	sb26a	data		short
+b26c	sb26c	data		short
+b26e	sb26e	data		short
+b274	sb274	data		short
+b276	sb276	data		short
