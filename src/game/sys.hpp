@@ -20,6 +20,18 @@ void set_test_keys(const std::vector<uint16_t>& keys);
 ega::Ega& screen();
 const Assets& assets();
 
+// BIOS key codes (scan code << 8 | ASCII) as get_key() returns them.
+namespace key {
+inline constexpr uint16_t kEnter = 0x1c0d, kEsc = 0x011b, kUp = 0x4800, kDown = 0x5000,
+                          kHome = 0x4700, kEnd = 0x4f00, kShiftE = 0x1245, kShiftS = 0x1f53,
+                          kShiftB = 0x3042;
+}  // namespace key
+
+// Many of the original's heights are in 200-line units (a CGA-sized screen) and are converted to
+// the EGA's 350 rows by multiplying by 1.75 in floating point; the result is truncated by the
+// caller where the original truncates.
+inline double ega_rows(double y200) { return y200 * 1.75; }
+
 void gfx_init();                                          // 1f39:0771
 void gfx_moveto(int x, int y);                            // 1f39:0801
 void gfx_plot(int x, int y);                              // 1f39:0813

@@ -30,7 +30,7 @@ void budget_meeting(int year) {
     crt::itoa(sa03e[Israel], gnp_text);
     std::strcpy(title, year_text);
     std::strcat(title, ds.str(0x7cb5));  // " DEFENSE BUDGET MEETING"
-    std::strcpy(aid_text, ds.str(0x7ccd));
+    std::strcpy(aid_text, ds.str(0x7ccd));  // ""
     int aid = 0;
     if (sb264 < 5) aid = 3000;
     else if (sb264 < 0x1e) aid = 2000;
@@ -38,7 +38,7 @@ void budget_meeting(int year) {
     if (sb264 > 0x31) aid = 0;
     treasury[Israel] += int16_t(aid);
     crt::itoa(aid, aid_text);
-    std::strcpy(text, ds.str(0x7cce));
+    std::strcpy(text, ds.str(0x7cce));  // "                                              …"
     if (aid == 0) {
         std::strcat(text, ds.str(0x7d41));  // "The U.S. have refused to give us ..."
     } else {
@@ -49,19 +49,19 @@ void budget_meeting(int year) {
     crt::itoa(treasury[Israel], aid_text);
     std::strcpy(lines, ds.str(0x7d75));  // "PRESENT DEFENSE BUDGET: $"
     std::strcat(lines, aid_text);
-    std::strcat(lines, ds.str(0x7d90));
+    std::strcat(lines, ds.str(0x7d90));  // " million.|"
     ui::text_window(0x14, 10, 0x172, 0x50, title, text, lines);
     std::strcpy(title, ds.str(0x7d9b));  // "Spending increase"
-    std::strcpy(text, ds.str(0x7dad));
+    std::strcpy(text, ds.str(0x7dad));  // "The defense budget may be changed by 2  ,but a…"
     std::strcpy(lines, ds.str(0x7e07));  // "PERCENTAGE OF G.N.P. SPENT ON D..."
     std::strcat(lines, gnp_text);
-    std::strcat(lines, ds.str(0x7e31));
+    std::strcat(lines, ds.str(0x7e31));  // "|"
     ui::text_window(0x172, 0x69, 0x276, 0xc3, title, text, lines);
     font_small = font_extra;
     gfx_moveto(0x1ff, 0x130);
-    gfx_text_small(ds.str(0x7e33));
+    gfx_text_small(ds.str(0x7e33));  // ";"
     gfx_moveto(0x1f2, 0xd8);
-    gfx_text_small(ds.str(0x7e35));
+    gfx_text_small(ds.str(0x7e35));  // ";"
     font_small = font_etech;
     int choice = ui::menu_popup(400, 5, 0x276, 0x55, menu(0x0ce4), 1);
     if (nation_status[Iraq] != 10) gfx_restore_rect(400, 0x276, 8, 0x96);
@@ -77,8 +77,8 @@ void budget_meeting(int year) {
     }
     if (sb26c == 0) {
         std::strcpy(title, ds.str(0x7e37));  // "Army size"
-        std::strcpy(text, ds.str(0x7e41));
-        std::strcpy(lines, ds.str(0x7e90));
+        std::strcpy(text, ds.str(0x7e41));  // " We are able to build our army size by 2 briga…"
+        std::strcpy(lines, ds.str(0x7e90));  // "|This may be viewed as aggressive| by the U.S.|"
         ui::text_window(0x140, 0x78, 0x276, 0xc3, title, text, lines);
         choice = ui::menu_popup(400, 5, 0x276, 0x5a, menu(0x0ce6), 1);
         gfx_restore_rect(0x140, 0x276, 0xd2, 0x155);
@@ -97,8 +97,8 @@ void summit() {
     char* lines = ds.str(kWindowLines);
     char buf[320];
     std::strcpy(title, ds.str(0x78e8));  // " MIDDLE EASTERN SUMMIT "
-    std::strcpy(text, ds.str(0x7900));
-    ui::text_window(0x96, 0x37, 0x1e0, 100, title, text, ds.str(0x7963));
+    std::strcpy(text, ds.str(0x7900));  // "                                              …"
+    ui::text_window(0x96, 0x37, 0x1e0, 100, title, text, ds.str(0x7963));  // "|"
     if (ui::menu_popup(200, 0x6e, 0x1ae, 0xa0, menu(0x0cf6), 0) == 2) {
         sb264 += 5;  // Israel stayed away
         return;
@@ -114,11 +114,11 @@ void summit() {
             std::strcpy(title, ds.str(0x7965));  // "SUMMIT PEACE AGREEMENT"
             char months[8];
             crt::itoa(at_war(a, b), months);
-            crt::sprintf(lines, ds.str(0x797d), {static_cast<const char*>(months)});
+            crt::sprintf(lines, ds.str(0x797d), {static_cast<const char*>(months)});  // "|War duration: %s months.| "
             if (a == Israel) {
                 std::strcpy(buf, ds.str(0x7999));  // "The U.N. have persuaded "
                 std::strcat(buf, ds.str(nation_name[b]));
-                std::strcat(buf, ds.str(0x79b2));
+                std::strcat(buf, ds.str(0x79b2));  // " to accept an immediate ceasefire preceding th…"
                 ui::text_window(0x82, 100, 500, 0xc3, title, buf, lines);
                 if (ui::menu_popup(0x1ae, 5, 0x276, 0x55, menu(0x0cf2), 0) == 1)
                     diplomacy::make_peace(Israel, b);
@@ -148,7 +148,7 @@ void summit() {
         std::strcat(buf, ds.str(0x7af7));  // " has offered to take control of the "
         std::strcat(buf, ds.str(nation_adjective[best]));
         std::strcat(buf, ds.str(0x7b86));  // " border."
-        std::strcpy(lines, ds.str(0x7b8f));
+        std::strcpy(lines, ds.str(0x7b8f));  // "|This would involve a territorial loss,but a p…"
         ui::text_window(0x46, 100, 0x230, 0xc3, title, buf, lines);
         if (ui::menu_popup(0x1a4, 5, 0x276, 0x50, menu(0x0cde), 1) == 1) {
             sb264 -= 0x19;
@@ -164,8 +164,8 @@ void summit() {
     gfx_draw_map(0);
     reports::black_out_collapsed();
     std::strcpy(title, ds.str(0x7be3));  // "SUMMIT PROPOSAL"
-    std::strcpy(text, ds.str(0x7bf3));
-    std::strcpy(lines, ds.str(0x7c87));
+    std::strcpy(text, ds.str(0x7bf3));  // "In order to reduce tension in the Middle East,…"
+    std::strcpy(lines, ds.str(0x7c87));  // "|This agreement could be reversed next year.|"
     ui::text_window(0x6e, 0x78, 0x208, 0xc3, title, text, lines);
     int choice = ui::menu_popup(0x1ae, 5, 0x276, 100, menu(0x0ce2), 1);
     gfx_restore_rect(0x6e, 0x208, 0xd2, 0x155);

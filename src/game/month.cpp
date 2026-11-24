@@ -12,7 +12,7 @@
 #include "game/policy.hpp"
 #include "game/reports.hpp"
 #include "game/sys.hpp"
-#include "game/turn.hpp"
+#include "game/border.hpp"
 #include "game/ui.hpp"
 #include "game/yearly.hpp"
 
@@ -91,7 +91,7 @@ void player_month() {
     if (headline_count != 0) {
         newspaper::show();
         std::strcpy(text, month_name(sb274));
-        std::strcat(text, ds.str(0x1b5c));
+        std::strcat(text, ds.str(0x1b5c));  // " "
         std::strcat(text, year_text);
         std::strcat(text, ds.str(0x1b5e));  // "?<Good morning, Prime Minister>?"
         menu_context = 5;
@@ -108,7 +108,7 @@ void player_month() {
     while (choice != 8) {
         crt::itoa(treasury[Israel], budget_text);
         std::strcpy(title, month_name(sb274));
-        std::strcat(title, ds.str(0x1b81));
+        std::strcat(title, ds.str(0x1b81));  // " "
         std::strcat(title, year_text);
         std::strcat(title, ds.str(0x1b83));  // " Foreign Office"
         affairs::foreign_office_advice();
@@ -117,7 +117,7 @@ void player_month() {
         std::strcat(lines, ds.str(0x1bb3));  // ". Middle East tension is "
         if (sb262 < 0x79) std::strcat(lines, ds.str(0x1bcd));  // "totally dire"
         else std::strcat(lines, ds.str(word_at(uint16_t(0x1032 + 2 * ((sb262 - 0x78) / 5)))));
-        std::strcat(lines, ds.str(0x1bda));
+        std::strcat(lines, ds.str(0x1bda));  // ".|"
         ui::text_window(0x9b, 0x7d, 0x203, 0xbe, title, text, lines);
         menu_context = 1;
         choice = ui::menu_popup(0x20d, 5, 0x276, 0xaa, menu(0x0ca4), 0);
@@ -164,12 +164,12 @@ void player_month() {
         crt::itoa(year, year_text);
         std::strcpy(policy_menu, menu(0x0ca6));  // "Policy:?Purchase arms?Strategic Action?Review Forces?"
         std::strcpy(title, month_name(sb274));
-        std::strcat(title, ds.str(0x1c09));
+        std::strcat(title, ds.str(0x1c09));  // " "
         std::strcat(title, year_text);
         std::strcat(title, ds.str(0x1c0b));  // " National Security Office"
         std::strcpy(lines, ds.str(0x1c3f));  // "Current Defense Budget $"
         std::strcat(lines, budget_text);
-        std::strcat(lines, ds.str(0x1c59));
+        std::strcat(lines, ds.str(0x1c59));  // " M|"
         ui::text_window(300, 0x87, 0x276, 0xbe, title, text, lines);
         // Extra items: Nuclear Club (until the bomb exists), Palestinian Problem (until settled),
         // Next Turn.
@@ -186,7 +186,7 @@ void player_month() {
         gfx_restore_rect(400, 0x276, 0xe, 0xd7);
         if (nation_status[Iraq] == 10) reports::black_out_collapsed();
         if (pick == 1) arms::procurement();
-        if (pick == 2) turn::strategic_action();
+        if (pick == 2) border::strategic_action();
         if (pick == 3) reports::review_forces();
         if (pick - 4 >= 0) {
             int option = options[pick - 4];

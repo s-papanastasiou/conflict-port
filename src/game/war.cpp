@@ -155,7 +155,7 @@ void peace_offer_check(int n) {
 
 void progress_dot() {
     sys::gfx_moveto(status_bar_x, 0x12e);
-    sys::gfx_text_small(ds.str(0x18f0));
+    sys::gfx_text_small(ds.str(0x18f0));  // "?"
     status_bar_x += 10;
 }
 

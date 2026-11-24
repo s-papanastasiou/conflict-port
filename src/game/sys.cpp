@@ -73,7 +73,7 @@ void gfx_draw_picture(int index) {
 uint16_t get_key() {
     uint16_t key;
     if (g_host) key = g_host->get_key();
-    else key = g_test_key_pos < g_test_keys.size() ? g_test_keys[g_test_key_pos++] : 0x1c0d;
+    else key = g_test_key_pos < g_test_keys.size() ? g_test_keys[g_test_key_pos++] : key::kEnter;
     ds.put<uint16_t>(0xb2a4, key);
     return key;
 }

@@ -22,8 +22,12 @@
 #include "game/save.hpp"
 #include "game/startup.hpp"
 #include "game/sys.hpp"
-#include "game/turn.hpp"
+#include "game/ai.hpp"
+#include "game/month.hpp"
+#include "game/monthly.hpp"
+#include "game/setup.hpp"
 #include "game/ui.hpp"
+#include "game/war.hpp"
 #include "platform/assets.hpp"
 #include "platform/dosfile.hpp"
 #include "platform/ega.hpp"
@@ -73,25 +77,25 @@ void run_game() {
             if (g::loaded_game_flag != 0) break;
         }
         load = true;
-        turn::new_game();
-        for (int n = 0; n < 7; ++n) turn::nation_turn(n);
-        turn::end_of_month();
+        setup::new_game();
+        for (int n = 0; n < 7; ++n) ai::nation_turn(n);
+        monthly::end_of_month();
     } while (g::loaded_game_flag != 0);
     for (;;) {
-        turn::f3036();
-        turn::f9fd9();
-        turn::f4675();
+        monthly::build_digest();
+        monthly::deliver_arms();
+        month::player_month();
         ui::draw_status_bar();
-        turn::f5a52();
+        monthly::garrison_borders();
         std::memset(ds.ptr(g::kNewsText), 0, 0x9c4);
         g::news_count = 0;
         g::news_text_used = 0;
-        turn::f74e1();
+        monthly::covert_operations();
         for (int n = 0; n < 7; ++n)
-            if (g::nation_status[n] != 10) turn::nation_turn(n);
-        turn::f1b92_0bd1();
-        turn::f1b92_0007();
-        turn::end_of_month();
+            if (g::nation_status[n] != 10) ai::nation_turn(n);
+        war::fight_wars();
+        war::air_strikes();
+        monthly::end_of_month();
         ++g::turn_count;
     }
 }
@@ -112,7 +116,7 @@ int game_main() {
                 g::menu_context = 0;
                 g::font_small = g::font_etech;
                 int choice = jump == 10
-                                 ? ui::menu_popup(0x1e0, 0x28, 0x276, 0x5a, ds.str(0x5690), 0)
+                                 ? ui::menu_popup(0x1e0, 0x28, 0x276, 0x5a, ds.str(0x5690), 0)  // "The End..?New Conflict?Exit?"
                                  : ui::menu_popup(200, 0x46, 400, 0x78, ds.str(g::menu_texts[0]), 0);
                 if (choice == 2) return 0;  // Exit
             }

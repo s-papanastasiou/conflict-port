@@ -32,7 +32,7 @@ void briefing() {
         font_small = font_etech;
         const char* name = ds.str(nation_name[n]);
         int w = gfx_text_width(name);
-        gfx_moveto((100 - w) / 2 + 0xcd, int(double(n * 12) * 1.75 + 34.0));
+        gfx_moveto((100 - w) / 2 + 0xcd, int(ega_rows(n * 12) + 34.0));
         gfx_text_small(name);
         font_small = font_extra;
         int k = 0;
@@ -47,13 +47,13 @@ void briefing() {
             bar[0] = '<';
         }
         bar[k + 1] = '\0';
-        gfx_moveto(0x131, int(double(n * 12) * 1.75 + 34.0));
+        gfx_moveto(0x131, int(ega_rows(n * 12) + 34.0));
         gfx_text_small(bar);
         for (k = 0; k < 10 - nation_status[n]; ++k) bar[k + 1] = '=';
         bar[0] = '<';
         if (nation_status[n] == 10) bar[0] = '>';
         bar[k + 1] = '\0';
-        int y = int(double(n * 12) * 1.75 + 34.0);
+        int y = int(ega_rows(n * 12) + 34.0);
         gfx_moveto(0xcd - gfx_text_width(bar), y);
         gfx_text_small(bar);
     }
@@ -83,22 +83,22 @@ void review_forces() {
     if (nation_status[Iran] == 10 || nation_status[Iraq] == 10) black_out_collapsed();
     std::strcpy(title, ds.str(0x4786));  // "Awaiting delivery of:"
     std::strcpy(text, ds.str(0x479d));   // "Description  Quantity  Cost"
-    std::strcpy(lines, ds.str(0x47ce));
-    std::strcpy(row, ds.str(0x47cf));
+    std::strcpy(lines, ds.str(0x47ce));  // ""
+    std::strcpy(row, ds.str(0x47cf));  // "|"
     for (int w = 0; w < 19; ++w) {
         if (!(turn_count > 1 && arms_order(w, turn_count - 1) != 0 && listed < 7)) continue;
         int value = arms_order(w, turn_count - 1) * weapon_cost[w];
         std::strcat(row, ds.str(weapon_name[w]));
-        while (gfx_text_width(ds.str(0x47d1)) > gfx_text_width(row)) std::strcat(row, ds.str(0x47f5));
+        while (gfx_text_width(ds.str(0x47d1)) > gfx_text_width(row)) std::strcat(row, ds.str(0x47f5));  // "Description                        ", " "
         crt::itoa(arms_order(w, turn_count - 1), qty);
         std::strcat(row, qty);
         crt::itoa(value, cost);
-        while (gfx_text_width(ds.str(0x47f7)) > gfx_text_width(row)) std::strcat(row, ds.str(0x4825));
-        std::strcat(row, ds.str(0x4827));
+        while (gfx_text_width(ds.str(0x47f7)) > gfx_text_width(row)) std::strcat(row, ds.str(0x4825));  // "Description                         Quantity ", " "
+        std::strcat(row, ds.str(0x4827));  // "$"
         std::strcat(row, cost);
-        std::strcat(row, ds.str(0x4829));
+        std::strcat(row, ds.str(0x4829));  // " M|"
         std::strcat(lines, row);
-        std::strcpy(row, ds.str(0x482d));
+        std::strcpy(row, ds.str(0x482d));  // ""
         ++listed;
     }
     if (std::strlen(lines) < 0x3d) {
@@ -113,9 +113,9 @@ void review_forces() {
         }
         crt::itoa(total, cost);
         if (total != 0) {
-            if (deals < 2) crt::sprintf(text, ds.str(0x4877), {total});
-            else crt::sprintf(text, ds.str(0x483a), {deals, total});
-            ui::text_window(100, 10, 400, 0x29, title, text, ds.str(0x48ae));
+            if (deals < 2) crt::sprintf(text, ds.str(0x4877), {total});  // "One arms agreement signed with an expenditure …"
+            else crt::sprintf(text, ds.str(0x483a), {deals, total});  // "%d arms agreements signed with a total expendi…"
+            ui::text_window(100, 10, 400, 0x29, title, text, ds.str(0x48ae));  // "|"
         }
     } else {
         ui::text_window(0x28, 10, 0x1b8, 0x5a, title, text, lines);

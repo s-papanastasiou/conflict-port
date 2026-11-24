@@ -53,9 +53,9 @@ void procurement() {
         std::strcat(text, ds.str(word_at(uint16_t(0x42c2 + 2 * need))));
     } else {
         std::strcpy(text, ds.str(0x455e));  // "Due to our conflict situation,"
-        std::strcat(text, ds.str(0x457d));
+        std::strcat(text, ds.str(0x457d));  // "we must maintain high levels of battlefield eq…"
     }
-    if (turn_count < 2 && forces(Israel, Israel, EarlyWarning) == 0) std::strcpy(text, ds.str(0x45b3));
+    if (turn_count < 2 && forces(Israel, Israel, EarlyWarning) == 0) std::strcpy(text, ds.str(0x45b3));  // "We advise you to purchase an early warning sur…"
     if (nation_status[Iraq] == 10) reports::black_out_collapsed();
     ui::text_window(300, 0x7d, 0x276, 0xbe, title, text, budget);
     int choice = ui::menu_popup(0x1c2, 5, 0x276, 0x6c, menu(0x0ca8), 0);
@@ -76,16 +76,16 @@ void procurement() {
             std::strcat(title, ds.str(0x4628));  // " arms dealer"
             if (count == 0) {
                 if ((supplier == 0 || supplier == 3) && treasury[Israel] < 100) {
-                    std::strcpy(text, ds.str(0x4635));
-                    std::strcat(text, ds.str(0x4658));
+                    std::strcpy(text, ds.str(0x4635));  // "Due to your current lack of funds,"
+                    std::strcat(text, ds.str(0x4658));  // "we feel unable to do business."
                 }
                 if ((supplier == 1 || supplier == 2) && treasury[Israel] < 0x32) {
-                    std::strcpy(text, ds.str(0x4677));
-                    std::strcat(text, ds.str(0x469c));
+                    std::strcpy(text, ds.str(0x4677));  // "Our government feels unable to trade"
+                    std::strcat(text, ds.str(0x469c));  // " until your funds are larger."
                 }
                 if (sb264 > 0x31 && supplier != 3) {  // official arms embargo
-                    std::strcpy(text, ds.str(0x46ba));
-                    std::strcat(text, ds.str(0x46e5));
+                    std::strcpy(text, ds.str(0x46ba));  // "Due to the offical arms embargo on Israel,"
+                    std::strcat(text, ds.str(0x46e5));  // "I have been instructed to make no sales."
                 }
                 ui::text_window(0x140, 0x82, 0x276, 0xc3, title, text, budget);
                 ui::menu_popup(0x1c2, 5, 0x276, 0x32, menu(0x0cc4), 0);
@@ -94,7 +94,7 @@ void procurement() {
             std::strcpy(lines, ds.str(0x470e));  // "Equipment:?"
             for (int i = 0; i < count; ++i) {
                 std::strcat(lines, ds.str(weapon_name[offers[i]]));
-                std::strcat(lines, ds.str(0x471a));
+                std::strcat(lines, ds.str(0x471a));  // "?"
             }
             std::strcat(lines, ds.str(0x471c));  // "End talks?"
             if (supplier == 3) {
@@ -156,10 +156,10 @@ void negotiate(const int* offers, int choice, int supplier) {
     crt::itoa(weapon_cost[w], cost);
     std::strcpy(line, ds.str(0x4727));  // "Unit cost: $"
     std::strcat(line, cost);
-    std::strcat(line, ds.str(0x4735));
+    std::strcat(line, ds.str(0x4735));  // " M|"
     std::strcat(line, ds.str(0x4739));  // "Funds available: $"
     std::strcat(line, money);
-    std::strcat(line, ds.str(0x474c));
+    std::strcat(line, ds.str(0x474c));  // " M|"
     std::strcpy(ds.str(kWindowTitle), ds.str(weapon_name[w]));
     std::strcpy(ds.str(kWindowText), ds.str(weapon_description[w]));
     ui::text_window(0xa5, 0x78, 0x1db, 0xc3, ds.str(kWindowTitle), ds.str(kWindowText), line);
@@ -202,16 +202,16 @@ int choose_quantity(int weapon) {
     std::strcat(lines, num);
     std::strcat(lines, ds.str(0x4763));  // " units?"
     if (half != 0) {
-        std::strcat(lines, ds.str(0x476a));
+        std::strcat(lines, ds.str(0x476a));  // "?"
         crt::itoa(half, num);
         std::strcat(lines, num);
-        std::strcat(lines, ds.str(0x476c));
+        std::strcat(lines, ds.str(0x476c));  // " units"
     }
     if (most != 0) {
-        std::strcat(lines, ds.str(0x4773));
+        std::strcat(lines, ds.str(0x4773));  // "?"
         crt::itoa(most, num);
         std::strcat(lines, num);
-        std::strcat(lines, ds.str(0x4775));
+        std::strcat(lines, ds.str(0x4775));  // " units"
     }
     std::strcat(lines, ds.str(0x477c));  // "No deal?"
     int choice = ui::menu_popup(0x1c2, 7, 0x276, 100, lines, 1);

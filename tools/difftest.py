@@ -6,6 +6,7 @@ usage: .venv/bin/python tools/difftest.py [--game DIR] [--build DIR] CASE...
   CASE = FUNCTION[:ARG,ARG...][@SAVE][#SEED]   e.g. nation_turn:3@CONF1.SAV#42
          SAVE '-' or omitted = fresh data segment; SEED defaults to 1
   --sweep FUNCTION  run the function on every save x seeds 1..N with every nation argument
+  --all             --sweep every ported function (the full check before committing a change)
 """
 import argparse
 import os
@@ -86,13 +87,19 @@ def main():
     ap.add_argument('--game', default=os.path.join(root, 'conflict'))
     ap.add_argument('--build', default=os.path.join(root, 'build'))
     ap.add_argument('--sweep', help='function taking one nation argument (or none)')
+    ap.add_argument('--all', action='store_true', help='sweep every ported function')
     ap.add_argument('--seeds', type=int, default=5)
     ap.add_argument('cases', nargs='*')
     a = ap.parse_args()
     o = Oracle(os.path.join(a.game, 'Conflict.exe'))
     cases = [parse_case(c) for c in a.cases]
-    if a.sweep:
-        name, fixed, _, _ = parse_case(a.sweep)
+    sweeps = [a.sweep] if a.sweep else []
+    if a.all:
+        listing = subprocess.run([os.path.join(a.build, 'difftest'), '--list'], capture_output=True,
+                                 text=True, check=True).stdout.split('\n')
+        sweeps = [line.split()[0] for line in listing if line.strip()]
+    for sweep in sweeps:
+        name, fixed, _, _ = parse_case(sweep)
         saves = ['-'] + sorted(os.path.join(a.game, f) for f in os.listdir(a.game) if '.SAV' in f.upper())
         nargs = {'new_game': 0, 'event_news': 1, 'relation_news': 2, 'pressure': 2,
                  'adjust_relation': 3, 'drift_news': 2, 'end_of_month': 0, 'build_digest': 0,

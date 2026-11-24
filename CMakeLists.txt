@@ -62,7 +62,6 @@ add_library(conflict_game STATIC
   src/game/ui.cpp
   src/game/save.cpp
   src/game/startup.cpp
-  src/game/turn.cpp
   src/game/news.cpp
   src/game/setup.cpp
   src/game/reports.cpp

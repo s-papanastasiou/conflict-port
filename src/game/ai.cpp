@@ -112,7 +112,7 @@ void nation_turn(int n) {
             break;
         default:
             // "illegal nuclar value" (bug #17: spelling)
-            std::fputs(fixes::fix(17) ? "illegal nuclear value" : ds.str(0x1a03), stderr);
+            std::fputs(fixes::fix(17) ? "illegal nuclear value" : ds.str(0x1a03), stderr);  // "illegal nuclar value"
             std::fputc('\n', stderr);
     }
     // Spend the treasury on forces.

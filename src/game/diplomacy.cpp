@@ -37,19 +37,19 @@ void diplomacy(int n) {
     int rel_israel = relations(Israel, n);
     char* title = ds.str(kWindowTitle);
     char* lines = ds.str(kWindowLines);
-    std::strcpy(title, ds.str(0x2820));
+    std::strcpy(title, ds.str(0x2820));  // ""
     std::strcat(title, ds.str(nation_adjective[n]));
     std::strcat(title, ds.str(0x2821));  // " diplomatic relations"
     if (rel_israel < 2) {
         std::strcpy(lines, ds.str(0x2860));  // "We have no formal relations with "
         std::strcat(lines, ds.str(nation_name[n]));
-        std::strcat(lines, ds.str(0x2883));
+        std::strcat(lines, ds.str(0x2883));  // " at the present time.|"
     } else {
         std::strcpy(lines, ds.str(0x2837));  // "Our relations with "
         std::strcat(lines, ds.str(nation_name[n]));
         std::strcat(lines, ds.str(0x284c));  // " at present are "
         std::strcat(lines, ds.str(word_at(uint16_t(0xe08 + 2 * rel_israel))));
-        std::strcat(lines, ds.str(0x285d));
+        std::strcat(lines, ds.str(0x285d));  // ".|"
     }
     int their_rival = rival[n];
     uint16_t tmpl = word_at(0x2806);
@@ -69,11 +69,11 @@ void diplomacy(int n) {
     if (sa0de[n] != 0 && rel_israel < sa0de[n]) tmpl = word_at(0x281c);
     news::format(ds.str(tmpl), n, n, comment);
     if (relations(Israel, their_rival) > 6 && rel_israel > 6) {
-        std::strcpy(comment, ds.str(0x289a));
+        std::strcpy(comment, ds.str(0x289a));  // "The "
         std::strcat(comment, ds.str(nation_adjective[n]));
         std::strcat(comment, ds.str(0x289f));  // " government is unhappy about our r..."
         std::strcat(comment, ds.str(nation_name[their_rival]));
-        std::strcat(comment, ds.str(0x28d0));
+        std::strcat(comment, ds.str(0x28d0));  // "."
     }
     ui::text_window(0x140, 0x78, 0x276, 0xbe, title, comment, lines);
     if (nation_status[n] == 10) {
@@ -136,7 +136,7 @@ void diplomacy(int n) {
                 std::strcpy(text, ds.str(0x2916));   // "Israel and "
                 std::strcat(text, ds.str(nation_name[n]));
                 std::strcat(text, ds.str(0x295c));   // " have accepted an immediate cease..."
-                std::strcpy(lines, ds.str(0x29fb));
+                std::strcpy(lines, ds.str(0x29fb));  // "|"
                 ui::text_window(0x82, 100, 500, 0xc3, title, text, lines);
                 if (ui::menu_popup(0x1ae, 5, 0x276, 0x55, menu(0x0cf2), 0) == 1) make_peace(Israel, n);
                 gfx_restore_rect(0x82, 500, 0xaf, 0x155);
@@ -164,7 +164,7 @@ void intelligence(int n) {
     std::strcpy(title, ds.str(0x2e58));  // "Psychopolitical warfare ..."
     std::strcpy(lines, ds.str(0x2e83));  // "Internal stability: "
     std::strcat(lines, ds.str(word_at(uint16_t(0x2a94 + 2 * instability))));
-    std::strcat(lines, ds.str(0x2e99));
+    std::strcat(lines, ds.str(0x2e99));  // ".|"
     if (instability == 10) {
         int controller = budget[n];  // a collapsed nation's budget slot holds its new master
         if (controller < 8) {
@@ -172,15 +172,15 @@ void intelligence(int n) {
                 std::strcat(lines, ds.str(0x2eef));  // "Controlling power: "
                 std::strcat(lines, ds.str(nation_name[controller]));
                 if (nation_status[controller] == 10) {
-                    std::strcat(lines, ds.str(0x2f03));
+                    std::strcat(lines, ds.str(0x2f03));  // " via "
                     std::strcat(lines, ds.str(nation_name[budget[controller]]));
                 }
-                std::strcat(lines, ds.str(0x2f09));
+                std::strcat(lines, ds.str(0x2f09));  // ".|"
             }
         } else {
             std::strcat(lines, ds.str(0x2ed6));  // "Controlling faction: "
             std::strcat(lines, ds.str(word_at(uint16_t(0xfae + 2 * sa13e[n]))));
-            std::strcat(lines, ds.str(0x2eec));
+            std::strcat(lines, ds.str(0x2eec));  // ".|"
         }
     } else if (insurgency != 0) {
         if (insurgency == 1) {
@@ -190,7 +190,7 @@ void intelligence(int n) {
             std::strcat(lines, ds.str(0x2eb7));  // "State of opposition group: "
             std::strcat(lines, ds.str(word_at(uint16_t(0x2e4c + 2 * (insurgency / 2)))));
         }
-        std::strcat(lines, ds.str(0x2ed3));
+        std::strcat(lines, ds.str(0x2ed3));  // ".|"
     }
     int danger = ((insurgency + instability) - sa04e[n]) - 4;
     if (danger < -2) std::strcpy(text, str_at(0x2dd8));

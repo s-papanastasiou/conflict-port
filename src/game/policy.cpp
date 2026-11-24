@@ -44,18 +44,18 @@ void nuclear_program() {
         }
     }
     std::strcat(lines, ds.str(nation_name[threat]));
-    std::strcat(lines, ds.str(0x4b15));
+    std::strcat(lines, ds.str(0x4b15));  // ".|"
     if (level == 6) {
-        std::strcpy(text, ds.str(0x4b18));
-        std::strcat(text, ds.str(0x4b55));
+        std::strcpy(text, ds.str(0x4b18));  // " We require further funding to start building …"
+        std::strcat(text, ds.str(0x4b55));  // " nuclear device. Another three months are requ…"
     }
     if (level == 7) {
-        std::strcpy(text, ds.str(0x4b89));
-        std::strcat(text, ds.str(0x4bca));
+        std::strcpy(text, ds.str(0x4b89));  // "Further funding is necessary to perfect the tr…"
+        std::strcat(text, ds.str(0x4bca));  // ".It is estimated another two months are requir…"
     }
     if (level == 8) {
-        std::strcpy(text, ds.str(0x4bfc));
-        std::strcat(text, ds.str(0x4c3b));
+        std::strcpy(text, ds.str(0x4bfc));  // "The device is almost ready for testing.Next mo…"
+        std::strcat(text, ds.str(0x4c3b));  // " ready for tests in the Negev."
     }
     if (level == 9) std::strcpy(text, ds.str(0x4c5a));  // "Israel is now a nuclear power..."
     if (nuclear_month == turn_count) {
@@ -88,11 +88,11 @@ void west_bank() {
     std::strcpy(title, ds.str(0x4a76));  // "West Bank Policy"
     std::strcpy(text, ds.str(0x4a87));   // "Arab unrest: "
     std::strcat(text, ds.str(word_at(uint16_t(0x4a60 + 2 * nation_status[Israel]))));
-    std::strcat(text, ds.str(0x4a95));
+    std::strcat(text, ds.str(0x4a95));  // "."
     std::strcpy(lines, ds.str(0x4a97));  // "Israeli presence: "
     std::strcat(lines, border_brigades[8] == 0 ? ds.str(0x4aba) : ds.str(0x4aab));  // low / full
     std::strcat(lines, ds.str(0x4ac7));  // "Tactics: "
-    std::strcat(lines, sb266 == 3 ? ds.str(0x4ad2) : ds.str(0x4ada));
+    std::strcat(lines, sb266 == 3 ? ds.str(0x4ad2) : ds.str(0x4ada));  // " SOFT.|", " HARD.|"
     gfx_draw_map(1);
     ui::text_window(0x140, 0x78, 0x276, 0xc3, title, text, lines);
     if (west_bank_month == turn_count) {  // policy already set this month

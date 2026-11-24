@@ -5,7 +5,7 @@
 #include "game/globals.hpp"
 #include "game/news.hpp"
 #include "game/sys.hpp"
-#include "game/turn.hpp"
+#include "game/diplomacy.hpp"
 #include "game/ui.hpp"
 
 namespace conflict::affairs {
@@ -107,17 +107,17 @@ void nation_affairs(int n) {
         char* title = ds.str(kWindowTitle);
         char* text = ds.str(kWindowText);
         char* lines = ds.str(kWindowLines);
-        std::strcpy(title, ds.str(0x241c));
+        std::strcpy(title, ds.str(0x241c));  // ""
         std::strcat(title, ds.str(nation_adjective[n]));
         std::strcat(title, ds.str(0x241d));  // " Official News"
-        std::strcpy(text, ds.str(0x242c));
+        std::strcpy(text, ds.str(0x242c));  // "|"
         std::strcat(text, ds.str(nation_adjective[n]));
         std::strcat(text, ds.str(0x242e));  // " prestige: "
         std::strcat(text, ds.str(word_at(uint16_t(0x1098 + 2 * sa04e[n]))));
-        std::strcat(text, ds.str(0x243a));
+        std::strcat(text, ds.str(0x243a));  // ".|"
         std::strcpy(lines, ds.str(sa1e2[n]));
         int len = int(std::strlen(lines));
-        if (len > 200) std::strcpy(text, ds.str(0x243d));
+        if (len > 200) std::strcpy(text, ds.str(0x243d));  // "|"
         if (len != 0 && len < 0x5c) ui::text_window(0x140, 0x82, 0x276, 0xc3, title, lines, text);
         if (len > 0x5b) ui::text_window(0x122, 100, 0x276, 0xc3, title, lines, text);
         menu_context = 2;
@@ -127,8 +127,8 @@ void nation_affairs(int n) {
             gfx_restore_rect(0x122, 0x276, 0xaf, 0x155);
             gfx_restore_rect(0x1a9, 0x276, 8, 0x85);
         }
-        if (choice == 1) turn::diplomacy(n);
-        if (choice == 2) turn::intelligence(n);
+        if (choice == 1) diplomacy::diplomacy(n);
+        if (choice == 2) diplomacy::intelligence(n);
         if (choice == 3) done = true;
     }
 }
@@ -201,14 +201,14 @@ void overlay_israel() {
 
 void mark_collapsed(int n, int x, int y) {
     if (nation_status[n] == 10) {
-        gfx_moveto(x, int(double(y) * 1.75));
+        gfx_moveto(x, int(ega_rows(y)));
         ui::draw_icon(icon(4));  // icons_cur + 0x200
     }
 }
 
 void mark_war(int a, int b, int last_month, int x, int y) {
     if (at_war(a, b) != 0 && nation_status[a] < 10 && nation_status[b] < 10) {
-        gfx_moveto(x, int(double(y) * 1.75));
+        gfx_moveto(x, int(ega_rows(y)));
         if (turn_count != last_month) blink_war(x, y);
         ui::draw_icon(icon(3));  // icons_cur + 0x180
     }
@@ -216,15 +216,15 @@ void mark_war(int a, int b, int last_month, int x, int y) {
 
 // Flash an icon five times: inverted (white on black), then normal.
 static void blink(int x, int y, int index) {
-    gfx_moveto(x, int(double(y) * 1.75));
+    gfx_moveto(x, int(ega_rows(y)));
     ui::draw_icon(icon(index));
     for (int i = 0; i < 5; ++i) {
-        gfx_moveto(x, int(double(y) * 1.75));
+        gfx_moveto(x, int(ega_rows(y)));
         fg_colour = 15;
         bg_colour = 0;
         gfx_draw_glyph32(icon(index));
         pause(2000.0);
-        gfx_moveto(x, int(double(y) * 1.75));
+        gfx_moveto(x, int(ega_rows(y)));
         fg_colour = 0;
         bg_colour = 15;
         ui::draw_icon(icon(index));
@@ -240,14 +240,14 @@ void blink_nuclear(int x, int y, int n) { blink(x, y, int16_t(word_at(uint16_t(0
 // tested (level 10, after 9).
 void show_nuclear(int n, int last_level, int last_month, int x0, int y0, int x1, int y1, int x, int y) {
     if (nuclear[n] <= 6) return;
-    gfx_moveto(x, int(double(y) * 1.75));
+    gfx_moveto(x, int(ega_rows(y)));
     ui::draw_icon(icon(int16_t(word_at(uint16_t(0x1a2e + 2 * nuclear[n])))));
     if (last_month != turn_count && (last_level == 6 || (nuclear[n] == 10 && last_level == 9))) {
-        const char* text = last_level == 6 ? ds.str(0x1a44) : ds.str(0x1a76);
-        ui::text_window(x0, y0, x1, y1, ds.str(0x1aa8), text, ds.str(0x1aa6));
+        const char* text = last_level == 6 ? ds.str(0x1a44) : ds.str(0x1a76);  // "U.S. satellite has sighted a nuclear installat…", "Reports have confirmed a nuclear test explosion"
+        ui::text_window(x0, y0, x1, y1, ds.str(0x1aa8), text, ds.str(0x1aa6));  // "WARNING", "|"
         blink_nuclear(x, y, n);
         wait_or_key(long(15000.0 / double(float(delay_calibration))));
-        gfx_restore_rect(x0, x1, int(double(y0) * 1.75), int(double(y1) * 1.75));
+        gfx_restore_rect(x0, x1, int(ega_rows(y0)), int(ega_rows(y1)));
     }
 }
 

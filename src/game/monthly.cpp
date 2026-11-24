@@ -71,7 +71,7 @@ void build_digest() {
         for (int i = 0; i < news_count; ++i) {
             if (!news::str_find4(ds.str(news_ptr[i]), ds.str(nation_name[n]))) continue;
             const char* p = ds.str(news_ptr[i]);
-            if (news::str_find4(p, ds.str(0x19fe))) sa1e2[n] = uint16_t(pos + kDigestText);
+            if (news::str_find4(p, ds.str(0x19fe))) sa1e2[n] = uint16_t(pos + kDigestText);  // "vict"
             while (*p != '\0') digest[uint16_t(pos++)] = *p++;
             digest[uint16_t(pos++)] = ' ';
         }

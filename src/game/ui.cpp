@@ -6,7 +6,7 @@
 #include "game/globals.hpp"
 #include "game/save.hpp"
 #include "game/sys.hpp"
-#include "game/turn.hpp"
+#include "game/reports.hpp"
 
 namespace conflict::ui {
 
@@ -16,8 +16,8 @@ using namespace sys;
 void draw_panel(int x0, int y0, int x1, int y1) {
     uint16_t saved = g::fg_colour;
     g::fg_colour = g::bg_colour;
-    double bottom = double(y1) * 1.75;
-    double top = double(y0) * 1.75;
+    double bottom = ega_rows(y1);
+    double top = ega_rows(y0);
     int top_row = int(top);
     gfx_fill_rect(x0, x1, top_row, int(bottom));
     top = top - 1.0;
@@ -44,8 +44,8 @@ void draw_titled_panel(int x0, int y0, int x1, int y1, const char* title) {
     int x = x0;
     int w = gfx_text_width(title);
     if (w < x1 - x0) x += (x1 - x0 - w) >> 1;
-    gfx_fill_rect_row(x - 1, x + w + 1, int(double(y0) * 1.75 + 9.0), 0);
-    gfx_moveto(x, int(double(y0) * 1.75 + 1.0));
+    gfx_fill_rect_row(x - 1, x + w + 1, int(ega_rows(y0) + 9.0), 0);
+    gfx_moveto(x, int(ega_rows(y0) + 1.0));
     gfx_text_small(title);
 }
 
@@ -79,7 +79,7 @@ void text_window(int x0, int y0, int x1, int y1, const char* title, const char* 
     const char* p = text;
     int width = (x1 - x0) - 15;
     char buf[80];
-    auto at_line = [&] { gfx_moveto(x0 + 15, int(double(line_y) * 1.75 + (double(y0) * 1.75 + 16.0))); };
+    auto at_line = [&] { gfx_moveto(x0 + 15, int(ega_rows(line_y) + (ega_rows(y0) + 16.0))); };
     while ((*p == '\0' ? 0 : gfx_text_width(p)) > width) {
         wrap_line(p, buf, width);
         if (!panel_drawn) {
@@ -127,18 +127,18 @@ void menu_add_item(int x, int y, int width, const char* text) {
     if (g::menu_line == 1) g::menu_item_count = 0;
     while (gfx_text_width(p) > width) {
         wrap_line(p, buf, width);
-        double base = double(y) * 1.75 + 13.0;
-        gfx_moveto(x + 10, int(double(g::menu_line << 3) * 1.75 + base));
+        double base = ega_rows(y) + 13.0;
+        gfx_moveto(x + 10, int(ega_rows(g::menu_line << 3) + base));
         ++g::menu_line;
         gfx_text_small(buf);
     }
-    double base = double(y) * 1.75 + 13.0;
-    gfx_moveto(x + 10, int(double(g::menu_line << 3) * 1.75 + base));
+    double base = ega_rows(y) + 13.0;
+    gfx_moveto(x + 10, int(ega_rows(g::menu_line << 3) + base));
     ++g::menu_item_count;
     g::menu_item_line[g::menu_item_count] = g::menu_line;
     ++g::menu_line;
     gfx_text_small(p);
-    gfx_moveto(x + width + 5, int(double((g::menu_line - 1) * 8) * 1.75 + base));
+    gfx_moveto(x + width + 5, int(ega_rows((g::menu_line - 1) * 8) + base));
     g::font_small = g::font_extra;
     gfx_text_small(ds.str(0x11ed));  // "01": empty checkbox
     g::font_small = g::font_etech;
@@ -180,17 +180,17 @@ int menu_select(int x, int y) {
     int item = 1;
     if (g::menu_context != 0) item = g::menu_context_pos[g::menu_context - 1];
     g::font_small = g::font_extra;
-    gfx_moveto(x - 20, int(double(g::menu_item_line[item]) * 14.0 + (double(y) * 1.75 + 13.0)));
+    gfx_moveto(x - 20, int(double(g::menu_item_line[item]) * 14.0 + (ega_rows(y) + 13.0)));
     int line = g::menu_item_line[item];
     gfx_text_small(ds.str(0x120a));  // "23": selected checkbox
     for (;;) {
         line <<= 3;
         uint16_t key = get_key();
         uint16_t fg = g::fg_colour;
-        if (key == 0x1c0d) {  // Enter: clear the box interior, then draw the tick
+        if (key == key::kEnter) {  // clear the box interior, then draw the tick
             g::fg_colour = g::bg_colour;
-            for (int r = int(double(line) * 1.75 + (double(y) * 1.75 + 15.0));
-                 !(double(line) * 1.75 + (double(y) * 1.75 + 19.0) <= double(r)); ++r)
+            for (int r = int(ega_rows(line) + (ega_rows(y) + 15.0));
+                 !(ega_rows(line) + (ega_rows(y) + 19.0) <= double(r)); ++r)
                 gfx_fill_rect_row(x - 16, x - 8, r, 0xff);
             g::font_small = g::font_etech;
             g::fg_colour = fg;
@@ -201,26 +201,26 @@ int menu_select(int x, int y) {
             }
             for (int c = x - 16; c < x - 8; ++c) {
                 double dy = double(g::menu_tick_dy[c - x + 16]);
-                gfx_plot(c, int(double(y) * 1.75 + double(line) * 1.75 + dy));
+                gfx_plot(c, int(ega_rows(y) + ega_rows(line) + dy));
                 delay_loop(3000);
             }
             return item;
         }
-        if (key == 0x1245) crt::longjmp_restart(999);           // Shift-E
-        if (key == 0x1f53 && g::menu_context == 5) break;       // Shift-S
-        if (key == 0x3042 && g::menu_context == 1) turn::briefing();  // Shift-B
+        if (key == key::kShiftE) crt::longjmp_restart(999);  // "I quit"
+        if (key == key::kShiftS && g::menu_context == 5) break;  // save
+        if (key == key::kShiftB && g::menu_context == 1) reports::briefing();
         fg = g::fg_colour;
-        if (key == 0x4f00)  // End
+        if (key == key::kEnd)
             while (g::menu_item_line[item] < g::menu_line - 1) ++item;
-        if (key == 0x4700) item = 1;                          // Home
-        if (key == 0x4800 && item > 1) --item;                // Up
-        if (key == 0x5000 && g::menu_line - 1 != g::menu_item_line[item]) ++item;  // Down
+        if (key == key::kHome) item = 1;
+        if (key == key::kUp && item > 1) --item;
+        if (key == key::kDown && g::menu_line - 1 != g::menu_item_line[item]) ++item;
         // Erase the old selection, draw the new one.
         g::fg_colour = g::bg_colour;
-        for (int r = int(double(line) * 1.75 + (double(y) * 1.75 + 15.0));
-             !(double(line) * 1.75 + (double(y) * 1.75 + 19.0) <= double(r)); ++r)
+        for (int r = int(ega_rows(line) + (ega_rows(y) + 15.0));
+             !(ega_rows(line) + (ega_rows(y) + 19.0) <= double(r)); ++r)
             gfx_fill_rect_row(x - 16, x - 8, r, 1);
-        gfx_moveto(x - 20, int(double(g::menu_item_line[item]) * 14.0 + (double(y) * 1.75 + 13.0)));
+        gfx_moveto(x - 20, int(double(g::menu_item_line[item]) * 14.0 + (ega_rows(y) + 13.0)));
         g::fg_colour = fg;
         gfx_text_small(ds.str(0x120d));  // "23"
         line = g::menu_item_line[item];
@@ -282,7 +282,7 @@ void draw_icon_border(int icon) {
     int k = 0;
     for (int y = 6; y < 190; y += 25)
         for (int col = 0; col < 15; ++col) {
-            gfx_moveto(col * 40 + 20, int(double(y) * 1.75));
+            gfx_moveto(col * 40 + 20, int(ega_rows(y)));
             draw_icon(ds.str(uint16_t(chosen[k] * 0x80 + g::icons_cur)));
             ++k;
         }
@@ -290,10 +290,10 @@ void draw_icon_border(int icon) {
 
 // 1000:245c — "Thinking..." status box shown while the computer moves.
 void draw_status_bar() {
-    g::status_bar_x = int16_t(gfx_text_width(ds.str(0x18d8)) + 0x68);
+    g::status_bar_x = int16_t(gfx_text_width(ds.str(0x18d8)) + 0x68);  // "Thinking..."
     draw_panel(100, 0xaa, 0xe6, 0xb6);
     gfx_moveto(0x69, 0x12e);
-    gfx_text_small(ds.str(0x18e4));
+    gfx_text_small(ds.str(0x18e4));  // "Thinking.. "
 }
 
 }  // namespace conflict::ui

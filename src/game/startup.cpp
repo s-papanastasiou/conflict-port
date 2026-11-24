@@ -87,7 +87,7 @@ void calibrate_delay() { g::delay_calibration = 1.0f; }
 // 1000:2337 — "C O N F L I C T" panel, Get Ready / Load Game menu, copyright line.
 void title_screen() {
     char copyright[100];
-    std::strcpy(copyright, ds.str(0x1881));
+    std::strcpy(copyright, ds.str(0x1881));  // "COPYRIGHT VIRGIN MASTERTRONIC 1990"
     g::loaded_game_flag = 0;
     ui::draw_panel(0x94, 0x32, 0x1e0, 0x50);
     gfx_moveto(0xb9, 0x62);

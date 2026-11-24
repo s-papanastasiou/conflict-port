@@ -63,47 +63,47 @@ void leadership_analysis() {
     crt::itoa(score, digits);
     for (size_t i = 0; i < std::strlen(digits); ++i) digits[i] = char(digits[i] + '0');  // big digits
     std::strcpy(text, ds.str(0x53ba));   // "Your leadership was "
-    std::strcpy(lines, ds.str(0x53cf));
+    std::strcpy(lines, ds.str(0x53cf));  // ""
     if (score < 0x1e) std::strcat(text, ds.str(0x53d0));       // a complete joke
     else if (score < 0x2d) std::strcat(text, ds.str(0x53e1));  // a total failure
-    if (score > 0x2c && score < 0x41) std::strcat(text, ds.str(0x53f2));
-    if (score > 0x40 && score < 0x50) std::strcat(text, ds.str(0x53ff));
-    if (score > 0x4f && score < 0x96) std::strcat(text, ds.str(0x540e));
-    if (score > 0x95 && score < 0xa5) std::strcat(text, ds.str(0x541e));
-    if (score > 0xa4 && score < 0x10e) std::strcat(text, ds.str(0x5430));
-    if (score > 0x10d && score < 0x14a) std::strcat(text, ds.str(0x5441));
-    if (score > 0x149 && score < 400) std::strcat(text, ds.str(0x544c));
-    if (score > 399) std::strcat(text, ds.str(0x5455));
+    if (score > 0x2c && score < 0x41) std::strcat(text, ds.str(0x53f2));  // "quite inept."
+    if (score > 0x40 && score < 0x50) std::strcat(text, ds.str(0x53ff));  // "not memorable."
+    if (score > 0x4f && score < 0x96) std::strcat(text, ds.str(0x540e));  // "not impressive."
+    if (score > 0x95 && score < 0xa5) std::strcat(text, ds.str(0x541e));  // "quite impressive."
+    if (score > 0xa4 && score < 0x10e) std::strcat(text, ds.str(0x5430));  // "very impressive."
+    if (score > 0x10d && score < 0x14a) std::strcat(text, ds.str(0x5441));  // "inspired !"
+    if (score > 0x149 && score < 400) std::strcat(text, ds.str(0x544c));  // "superb !"
+    if (score > 399) std::strcat(text, ds.str(0x5455));  // " amazing !!"
     if (nation_status[Syria] == 10 && budget[Syria] == 7) held = 1;
     if (nation_status[Lebanon] == 10 && budget[Lebanon] == 7) ++held;
     if (nation_status[Jordan] == 10 && budget[Jordan] == 7) ++held;
     if (nation_status[Egypt] == 10 && budget[Egypt] == 7) ++held;
-    if (turn_count < 6) crt::sprintf(lines, ds.str(0x5461), {int(turn_count)});
-    if (turn_count > 5 && turn_count < 0xe) crt::sprintf(lines, ds.str(0x5480), {int(turn_count)});
-    if (turn_count > 0xd && turn_count < 0x18) crt::sprintf(lines, ds.str(0x54a4), {turn_count % 12});
-    if (turn_count > 0x17) std::strcpy(lines, ds.str(0x54cb));
-    if (held == 0) std::strcat(lines, ds.str(0x5551));
+    if (turn_count < 6) crt::sprintf(lines, ds.str(0x5461), {int(turn_count)});  // "|-You survived only %d months."
+    if (turn_count > 5 && turn_count < 0xe) crt::sprintf(lines, ds.str(0x5480), {int(turn_count)});  // "|-You survived %d months in office."
+    if (turn_count > 0xd && turn_count < 0x18) crt::sprintf(lines, ds.str(0x54a4), {turn_count % 12});  // "|-You survived one year and %d months."
+    if (turn_count > 0x17) std::strcpy(lines, ds.str(0x54cb));  // "|-You hung on to power for a long time!"
+    if (held == 0) std::strcat(lines, ds.str(0x5551));  // "|-There are no states"
     else {
-        if (held == 1) std::strcat(lines, ds.str(0x54f3));
-        if (held == 2) std::strcat(lines, ds.str(0x550d));
-        if (held == 3) std::strcat(lines, ds.str(0x5524));
-        if (held == 4) std::strcat(lines, ds.str(0x553d));
+        if (held == 1) std::strcat(lines, ds.str(0x54f3));  // "|-There is only one state"
+        if (held == 2) std::strcat(lines, ds.str(0x550d));  // "|-There are two states"
+        if (held == 3) std::strcat(lines, ds.str(0x5524));  // "|-There are three states"
+        if (held == 4) std::strcat(lines, ds.str(0x553d));  // "|-All border states"
     }
     std::strcat(lines, ds.str(0x5567));  // " under Israeli control."
     std::strcat(lines, ds.str(0x557f));  // "You committed "
-    if (sb276 < 1) std::strcat(lines, ds.str(0x5590));
-    if (sb276 > 0 && sb276 < 4) std::strcat(lines, ds.str(0x5593));
-    if (sb276 > 3 && sb276 < 10) std::strcat(lines, ds.str(0x5597));
-    if (sb276 > 10) std::strcat(lines, ds.str(0x55a0));
+    if (sb276 < 1) std::strcat(lines, ds.str(0x5590));  // "no"
+    if (sb276 > 0 && sb276 < 4) std::strcat(lines, ds.str(0x5593));  // "few"
+    if (sb276 > 3 && sb276 < 10) std::strcat(lines, ds.str(0x5597));  // "numerous"
+    if (sb276 > 10) std::strcat(lines, ds.str(0x55a0));  // "copious"
     std::strcat(lines, ds.str(0x55a8));  // " acts of violence."
     std::strcat(lines, ds.str(0x55bb));  // "Relations with the U.S. are "
-    if (sb264 < 1) std::strcat(lines, ds.str(0x55da));
-    if (sb264 > 0 && sb264 < 5) std::strcat(lines, ds.str(0x55e5));
-    if (sb264 > 4 && sb264 < 0x1e) std::strcat(lines, ds.str(0x55eb));
-    if (sb264 > 0x1d) std::strcat(lines, ds.str(0x55f1));
+    if (sb264 < 1) std::strcat(lines, ds.str(0x55da));  // "excellent."
+    if (sb264 > 0 && sb264 < 5) std::strcat(lines, ds.str(0x55e5));  // "good."
+    if (sb264 > 4 && sb264 < 0x1e) std::strcat(lines, ds.str(0x55eb));  // "poor."
+    if (sb264 > 0x1d) std::strcat(lines, ds.str(0x55f1));  // "sour."
     std::strcat(lines, ds.str(0x55f7));  // "Our Prestige ended as "
     std::strcat(lines, ds.str(word_at(uint16_t(0x1098 + 2 * sa04e[Israel]))));
-    std::strcat(lines, ds.str(0x5610));
+    std::strcat(lines, ds.str(0x5610));  // "."
     std::strcat(lines, ds.str(0x5612));  // "Leadership Style: "
     int style = 7;
     if (sb276 > 10) style = 1;
@@ -118,9 +118,9 @@ void leadership_analysis() {
     if (sb276 > 0 && sb276 < 8 && sb26a == 0 && sb26c == 0 && sa04e[Israel] > 4) style = 6;
     if (sb276 < 4 && sb26a != 0 && sb26c != 0 && sb264 < 0x1e) style = 3;
     std::strcat(lines, ds.str(word_at(uint16_t(0x53aa + 2 * style))));
-    std::strcat(lines, ds.str(0x5627));
+    std::strcat(lines, ds.str(0x5627));  // ".|"
     std::strcat(text, ds.str(0x562a));  // "Analysis Score:"
-    ui::text_window(0x34, 10, 0x24e, 0x78, ds.str(0x563e), text, lines);
+    ui::text_window(0x34, 10, 0x24e, 0x78, ds.str(0x563e), text, lines);  // "LEADERSHIP ANALYSIS"
     font_small = font_extra;
     gfx_moveto(0x214, 0x21);
     gfx_text_small(digits);

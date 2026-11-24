@@ -74,7 +74,7 @@ void save_game() {
 // 1000:29ed
 void load_game() {
     g::loaded_game_flag = 0;
-    int slot = ui::menu_popup(0xb4, 0x1e, 0x1c2, 0xa0, ds.str(0x1927), 0);
+    int slot = ui::menu_popup(0xb4, 0x1e, 0x1c2, 0xa0, ds.str(0x1927), 0);  // "Load in...?Game 1?Game 2?Game 3?Game 4?Game 5?…"
     if (slot == 6) return;  // Cancel
     if (!read_file(slot_path(slot))) crt::longjmp_restart(999);
     g::loaded_game_flag = 1;
