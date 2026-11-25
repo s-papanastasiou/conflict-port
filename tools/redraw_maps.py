@@ -79,7 +79,7 @@ MAPS = {
         colours={'Algeria': 14, 'Chad': 2, 'Egypt': 10, 'Libya': 14, 'Niger': 10, 'Sudan': 2,
                  'Tunisia': 10},
         labels=[('LIBYA', 17.5, 27.2, 'big'), ('EGYPT', 28.5, 26.0, 'big'), ('CHAD', 18.5, 21.2, 'small'),
-                ('NIGER', 12.4, 22.0, 'small'), ('SUDAN', 28.0, 21.0, 'small'), ('ALGERIA', 11.3, 27.5, 'small'),
+                ('NIGER', 12.4, 22.0, 'small'), ('SUDAN', 28.0, 21.0, 'small'),
                 ('MEDITERRANEAN SEA', 18.5, 34.3, 'sea')],
         cities=[('Tripoli', 13.1913, 32.8872, 'r'), ('Benghazi', 20.0868, 32.1194, 'r'),
                 ('Cairo', 31.2357, 30.0444, 'l'), ('Alexandria', 29.9187, 31.2001, 'l')]),
