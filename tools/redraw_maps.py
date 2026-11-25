@@ -87,7 +87,7 @@ MAPS = {
         frame=(10, 11, 412, 262, 2), proj=(47.328, -1591.80, -52.922, 1969.46),
         colours={'Iraq': 10, 'Israel': 12, 'Jordan': 2, 'Lebanon': 10, 'West Bank': 2, 'Gaza': 12,
                  'Syria': 14, 'Turkey': 2},
-        labels=[('SYRIA', 38.4, 35.2, 'big'), ('IRAQ', 41.45, 33.05, 'big'), ('JORDAN', 37.4, 32.6, 'small'),
+        labels=[('SYRIA', 38.4, 35.2, 'big'), ('IRAQ', 41.45, 33.05, 'big'), ('JORDAN', 37.69, 32.47, 'small'),
                 ('TURKEY', 37.2, 37.05, 'small'), ('LEBANON', 35.0, 34.1, 'small'), ('ISRAEL', 34.75, 32.75, 'small')],
         cities=[('Damascus', 36.2913, 33.5138, 'r'), ('Aleppo', 37.1612, 36.2021, 'r'),
                 ('Homs', 36.7235, 34.7308, 'r'), ('Beirut', 35.5018, 33.8938, 'l'),
