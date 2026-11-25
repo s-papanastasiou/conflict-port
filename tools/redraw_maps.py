@@ -70,7 +70,7 @@ MAPS = {
         colours={'Iran': 14, 'Iraq': 10, 'Jordan': 2, 'Kuwait': 2, 'Saudi Arabia': 14, 'Syria': 14,
                  'Turkey': 2},
         labels=[('IRAQ', 42.6, 33.4, 'big'), ('IRAN', 48.0, 34.0, 'big'), ('SYRIA', 39.2, 35.3, 'small'),
-                ('SAUDI ARABIA', 42.5, 29.4, 'big'), ('JORDAN', 38.9, 32.1, 'small'),
+                ('SAUDI ARABIA', 42.5, 29.4, 'big'), ('JORDAN', 38.45, 32.5, 'small'),
                 ('TURKEY', 42.5, 37.2, 'small'), ('KUWAIT', 47.4, 29.05, 'small'), ('GULF', 49.7, 29.0, 'sea')],
         cities=[('Baghdad', 44.3661, 33.3152, 'r'), ('Basra', 47.7804, 30.5085, 'l'),
                 ('Mosul', 43.1189, 36.3450, 'r'), ('Tehran', 51.4215, 35.6944, 'l')]),
