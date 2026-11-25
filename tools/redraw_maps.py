@@ -48,7 +48,7 @@ MAPS = {
                  'Turkey': 14},
         labels=[('EGYPT', 31.9, 27.3, 'big'), ('JORDAN', 37.3, 31.0, 'big'), ('SYRIA', 38.6, 35.2, 'big'),
                 ('IRAQ', 43.4, 32.4, 'big'), ('SAUDI ARABIA', 41.6, 27.6, 'big'),
-                ('ISRAEL', 34.95, 30.85, 'small-white'), ('LEBANON', 36.55, 34.5, 'small'),
+                ('ISRAEL', 34.95, 30.85, 'small-white'), ('LEBANON', 36.35, 34.36, 'small'),
                 ('CYPRUS', 33.2, 35.6, 'small'),
                 ('MEDITERRANEAN', 32.6, 33.6, 'sea'), ('SEA', 32.6, 33.25, 'sea'), ('RED SEA', 35.3, 25.4, 'sea')],
         cities=[('Cairo', 31.2357, 30.0444, 'r'), ('Amman', 35.9284, 31.9454, 'r'),
