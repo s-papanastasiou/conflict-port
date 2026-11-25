@@ -58,7 +58,7 @@ MAPS = {
         frame=(48, 7, 378, 338, 1), proj=(134.679, -4532.17, -114.253, 3822.65),
         colours={'Egypt': 10, 'Israel': 12, 'Jordan': 2, 'Lebanon': 10, 'West Bank': 2, 'Gaza': 12,
                  'Syria': 14},
-        labels=[('ISRAEL', 34.75, 30.75, 'big'), ('JORDAN', 36.0, 31.35, 'big'), ('SYRIA', 36.05, 33.05, 'big'),
+        labels=[('ISRAEL', 34.75, 30.75, 'big'), ('JORDAN', 36.0, 31.35, 'big'), ('SYRIA', 36.14, 33.06, 'big'),
                 ('LEBANON', 35.55, 33.35, 'small'), ('EGYPT', 34.15, 30.05, 'small'),
                 ('MEDITERRANEAN', 34.55, 33.05, 'sea'), ('SEA', 34.55, 32.93, 'sea'),
                 ('DEAD SEA', 35.49, 31.53, 'sea-vertical')],
