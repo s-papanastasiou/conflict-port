@@ -25,7 +25,7 @@ int main() {
         {{40, 40, 11}, {300, 250, 14}},    // MDLEAST: Mediterranean, Saudi Arabia
         {{70, 40, 11}, {150, 280, 12}},    // ISRAEL: sea, Negev (Israel)
         {{250, 150, 10}, {440, 290, 11}},  // IRAQ: Iraq, Gulf
-        {{150, 170, 14}, {380, 200, 10}},  // LIBYA: Libya, Egypt
+        {{120, 230, 14}, {380, 200, 10}},  // LIBYA: Libya, Egypt
         {{250, 120, 14}, {30, 150, 11}},   // SYRIA: Syria, sea
     };
     for (int i = 0; i < 5; ++i) {

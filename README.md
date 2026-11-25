@@ -188,8 +188,8 @@ The redrawn maps keep the original layout: every country is where the original p
 its original colour, because the game draws war, collapse and brigade markers at fixed positions
 on the maps and recolours collapsed countries by colour. They are drawn by
 `tools/redraw_maps.py` from [Natural Earth](https://www.naturalearthdata.com/) data (public
-domain), projected to match the original maps, with labels in DejaVu Sans Condensed (free licence);
-the result is in `assets/maps/` and built into the program. No original game data goes into
+domain), projected to match the original maps, with labels in pixel fonts drawn for the EGA
+screen; the result is in `assets/maps/` and built into the program. No original game data goes into
 them. To redraw them (needs Python 3 with numpy and Pillow; Natural Earth is downloaded on first
 use): `python3 tools/redraw_maps.py`.
 

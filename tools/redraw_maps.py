@@ -9,7 +9,8 @@ by colour inside fixed rectangles. Only the drawing is new: real coastlines and 
 lines, a ripple along the coasts, new labels and city names. Everything comes from:
   - Natural Earth 1:10m countries and lakes (public domain), downloaded on first use into
     ~/.cache/conflict-port/naturalearth
-  - DejaVu Sans Condensed (free licence) for the labels
+  - two pixel fonts drawn here (bold capitals for the country names, a smaller one for the other
+    labels and the city names)
 No original game data is used; --compare GAMEDIR only reports how well a new map lines up with the
 original one. Needs Python 3 with numpy and Pillow.
 """
@@ -17,12 +18,11 @@ import argparse
 import json
 import os
 import struct
-import subprocess
 import sys
 import urllib.request
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 W, H = 640, 350
 GREY, BLACK, SEA, RIPPLE, BORDER = 7, 0, 11, 3, 8
@@ -114,18 +114,6 @@ def polygons(geom):
     return [geom['coordinates']] if geom['type'] == 'Polygon' else geom['coordinates']
 
 
-def font(style):
-    """DejaVu Sans Condensed (bold for country names)."""
-    name = 'DejaVu Sans Condensed:bold' if style == 'bold' else 'DejaVu Sans Condensed'
-    try:
-        path = subprocess.run(['fc-match', '-f', '%{file}', name], capture_output=True, text=True).stdout
-    except FileNotFoundError:
-        path = ''
-    if 'DejaVuSansCondensed' not in path:
-        sys.exit('DejaVu Sans Condensed not found (install the dejavu fonts)')
-    return path
-
-
 # ---- drawing ----------------------------------------------------------------------------------
 
 class Map:
@@ -193,11 +181,11 @@ class Map:
         img = Image.fromarray(a, 'P')
         for text, lon, lat, style in self.m['labels']:
             x, y = self.xy(lon, lat)
-            if style == 'big': text_into(img, (x, y), '  '.join(text), 11, BLACK, 'bold')
-            elif style == 'small': text_into(img, (x, y), text, 8, BLACK, 'regular')
-            elif style == 'small-white': text_into(img, (x, y), text, 8, 15, 'regular')
-            elif style == 'sea-vertical': text_into(img, (x, y), ' '.join(text), 8, 1, 'regular', vertical=True)
-            else: text_into(img, (x, y), ' '.join(text), 9, 1, 'regular')
+            if style == 'big': pixel_text_into(img, (x, y), '  '.join(text), BLACK, big=True)
+            elif style == 'small': pixel_text_into(img, (x, y), text, BLACK)
+            elif style == 'small-white': pixel_text_into(img, (x, y), text, 15)
+            elif style == 'sea-vertical': pixel_text_into(img, (x, y), ' '.join(text), 1, vertical=True)
+            else: pixel_text_into(img, (x, y), ' '.join(text), 1)
         a = np.array(img)
         for name, lon, lat, side in self.m['cities']:
             x, y = (int(round(v)) for v in self.xy(lon, lat))
@@ -208,8 +196,8 @@ class Map:
         for name, lon, lat, side in self.m['cities']:
             x, y = self.xy(lon, lat)
             if inside[int(round(y)), int(round(x))]:
-                text_into(img, (x + 4, y) if side == 'r' else (x - 4, y), name, 8, BLACK, 'regular',
-                          'lm' if side == 'r' else 'rm')
+                pixel_text_into(img, (x + 3, y) if side == 'r' else (x - 3, y), name, BLACK,
+                                'lm' if side == 'r' else 'rm')
         a = np.array(img)
         out = np.full((H, W), GREY, np.uint8)
         out[inside] = a[inside]
@@ -229,23 +217,105 @@ def grow(mask, n):
     return m
 
 
-FONTS = {}
+# ---- pixel font ---------------------------------------------------------------------------------
+# All labels use hand-drawn pixel fonts, made for the EGA screen (TrueType fonts at this size lose
+# too much when drawn without anti-aliasing). Small labels and city names: capitals 7 pixels high,
+# lowercase 5 (plus 2 for descenders), 1 pixel between letters. Each glyph is 9 rows: 7 down to the
+# baseline, then 2 for descenders.
+PIXEL_GLYPHS = {
+    'A': '.###. #...# #...# ##### #...# #...# #...#', 'B': '####. #...# #...# ####. #...# #...# ####.',
+    'C': '.###. #...# #.... #.... #.... #...# .###.', 'D': '####. #...# #...# #...# #...# #...# ####.',
+    'E': '##### #.... #.... ####. #.... #.... #####', 'F': '##### #.... #.... ####. #.... #.... #....',
+    'G': '.###. #...# #.... #.### #...# #...# .####', 'H': '#...# #...# #...# ##### #...# #...# #...#',
+    'I': '### .#. .#. .#. .#. .#. ###', 'J': '..### ...#. ...#. ...#. ...#. #..#. .##..',
+    'K': '#...# #..#. #.#.. ##... #.#.. #..#. #...#', 'L': '#.... #.... #.... #.... #.... #.... #####',
+    'M': '#...# ##.## #.#.# #.#.# #...# #...# #...#', 'N': '#...# #...# ##..# #.#.# #..## #...# #...#',
+    'O': '.###. #...# #...# #...# #...# #...# .###.', 'P': '####. #...# #...# ####. #.... #.... #....',
+    'Q': '.###. #...# #...# #...# #.#.# #..#. .##.#', 'R': '####. #...# #...# ####. #.#.. #..#. #...#',
+    'S': '.#### #.... #.... .###. ....# ....# ####.', 'T': '##### ..#.. ..#.. ..#.. ..#.. ..#.. ..#..',
+    'U': '#...# #...# #...# #...# #...# #...# .###.', 'V': '#...# #...# #...# #...# #...# .#.#. ..#..',
+    'W': '#...# #...# #...# #.#.# #.#.# ##.## #...#', 'X': '#...# #...# .#.#. ..#.. .#.#. #...# #...#',
+    'Y': '#...# #...# .#.#. ..#.. ..#.. ..#.. ..#..', 'Z': '##### ....# ...#. ..#.. .#... #.... #####',
+    'a': '..... ..... .###. ....# .#### #...# .####', 'b': '#.... #.... ####. #...# #...# #...# ####.',
+    'c': '.... .... .### #... #... #... .###', 'd': '....# ....# .#### #...# #...# #...# .####',
+    'e': '..... ..... .###. #...# ##### #.... .###.', 'f': '..## .#.. #### .#.. .#.. .#.. .#..',
+    'g': '..... ..... .#### #...# #...# #...# .#### ....# .###.',
+    'h': '#.... #.... ####. #...# #...# #...# #...#', 'i': '# . # # # # #',
+    'j': '..# ... ..# ..# ..# ..# ..# ..# ##.', 'k': '#... #... #..# #.#. ##.. #.#. #..#',
+    'l': '# # # # # # #', 'm': '..... ..... ####. #.#.# #.#.# #.#.# #.#.#',
+    'n': '..... ..... ####. #...# #...# #...# #...#', 'o': '..... ..... .###. #...# #...# #...# .###.',
+    'p': '..... ..... ####. #...# #...# #...# ####. #.... #....',
+    'q': '..... ..... .#### #...# #...# #...# .#### ....# ....#',
+    'r': '.... .... #.## ##.. #... #... #...', 's': '.... .... .### #... .##. ...# ###.',
+    't': '... .#. ### .#. .#. .#. ..#', 'u': '..... ..... #...# #...# #...# #...# .####',
+    'v': '..... ..... #...# #...# #...# .#.#. ..#..', 'w': '..... ..... #...# #...# #.#.# #.#.# .#.#.',
+    'x': '..... ..... #...# .#.#. ..#.. .#.#. #...#',
+    'y': '..... ..... #...# #...# #...# #...# .#### ....# .###.',
+    'z': '..... ..... ##### ...#. ..#.. .#... #####',
+    ' ': '... ... ... ... ... ... ...', '.': '. . . . . . #', '-': '... ... ... ### ... ... ...',
+    "'": '# # . . . . .',
+}
 
 
-def text_into(img, xy, text, size, colour, style, anchor='mm', vertical=False):
-    """Crisp 1-bit text (no anti-aliasing) written into the palette image in place; vertical text
-    reads bottom to top."""
-    key = (style, size)
-    if key not in FONTS: FONTS[key] = ImageFont.truetype(font(style), size)
-    mask = Image.new('1', img.size, 0)
+# Bold capitals for the big country names: 9 pixels high, strokes 2 pixels wide.
+BIG_GLYPHS = {
+    'A': '..###.. .##.##. ##...## ##...## ##...## ####### ##...## ##...## ##...##',
+    'B': '######. ##...## ##...## ##...## ######. ##...## ##...## ##...## ######.',
+    'C': '.#####. ##...## ##..... ##..... ##..... ##..... ##..... ##...## .#####.',
+    'D': '#####.. ##..##. ##...## ##...## ##...## ##...## ##...## ##..##. #####..',
+    'E': '###### ##.... ##.... ##.... #####. ##.... ##.... ##.... ######',
+    'F': '###### ##.... ##.... ##.... #####. ##.... ##.... ##.... ##....',
+    'G': '.#####. ##...## ##..... ##..... ##.#### ##...## ##...## ##...## .######',
+    'H': '##...## ##...## ##...## ##...## ####### ##...## ##...## ##...## ##...##',
+    'I': '#### .##. .##. .##. .##. .##. .##. .##. ####',
+    'J': '...#### ....##. ....##. ....##. ....##. ....##. ##..##. ##..##. .####..',
+    'K': '##...## ##..##. ##.##.. ####... ###.... ####... ##.##.. ##..##. ##...##',
+    'L': '##.... ##.... ##.... ##.... ##.... ##.... ##.... ##.... ######',
+    'M': '##...## ###.### ####### ##.#.## ##...## ##...## ##...## ##...## ##...##',
+    'N': '##...## ###..## ###..## ####.## ##.#### ##..### ##..### ##...## ##...##',
+    'O': '.#####. ##...## ##...## ##...## ##...## ##...## ##...## ##...## .#####.',
+    'P': '######. ##...## ##...## ##...## ######. ##..... ##..... ##..... ##.....',
+    'Q': '.#####. ##...## ##...## ##...## ##...## ##...## ##.#### ##..##. .###.##',
+    'R': '######. ##...## ##...## ##...## ######. ##.##.. ##..##. ##...## ##...##',
+    'S': '.#####. ##...## ##..... ##..... .#####. .....## .....## ##...## .#####.',
+    'T': '###### ..##.. ..##.. ..##.. ..##.. ..##.. ..##.. ..##.. ..##..',
+    'U': '##...## ##...## ##...## ##...## ##...## ##...## ##...## ##...## .#####.',
+    'V': '##...## ##...## ##...## ##...## ##...## .##.##. .##.##. ..###.. ...#...',
+    'W': '##...## ##...## ##...## ##...## ##...## ##.#.## ####### ###.### ##...##',
+    'X': '##...## ##...## .##.##. ..###.. ..###.. ..###.. .##.##. ##...## ##...##',
+    'Y': '##...## ##...## .##.##. .##.##. ..###.. ..###.. ..###.. ..###.. ..###..',
+    'Z': '####### .....## ....##. ...##.. ..##... .##.... ##..... ##..... #######',
+    ' ': '.. .. .. .. .. .. .. .. ..',
+}
+
+
+def pixel_text(text, glyphs=PIXEL_GLYPHS):
+    """The text drawn in a pixel font: a bool array 9 rows high."""
+    parts = []
+    for ch in text:
+        rows = glyphs[ch].split()
+        rows += ['.' * len(rows[0])] * (9 - len(rows))
+        parts += [np.array([[c == '#' for c in r] for r in rows]), np.zeros((9, 1), bool)]
+    return np.hstack(parts[:-1])
+
+
+def pixel_text_into(img, xy, text, colour, anchor='mm', vertical=False, big=False):
+    """Pixel-font text (big: the bold capitals) written into the palette image in place, anchored
+    like text_into (the middle is the middle of the capitals); vertical text reads bottom to top."""
+    m = pixel_text(text, BIG_GLYPHS if big else PIXEL_GLYPHS)
+    x, y = int(round(xy[0])), int(round(xy[1]))
     if vertical:
-        t = Image.new('1', (200, 40), 0)
-        ImageDraw.Draw(t).text((100, 20), text, font=FONTS[key], fill=1, anchor='mm')
-        t = t.rotate(90, expand=True)
-        mask.paste(t, (int(round(xy[0])) - 20, int(round(xy[1])) - 100))
+        m = np.rot90(m)
+        x0, y0 = x - 3, y - m.shape[0] // 2
     else:
-        ImageDraw.Draw(mask).text(xy, text, font=FONTS[key], fill=1, anchor=anchor)
-    a = np.array(img); a[np.array(mask)] = colour
+        w = m.shape[1]
+        x0 = x - w // 2 if anchor[0] == 'm' else x if anchor[0] == 'l' else x - w + 1
+        y0 = y - (4 if big else 3)
+    a = np.array(img)
+    ys, xs = np.nonzero(m)
+    ys, xs = ys + y0, xs + x0
+    ok = (ys >= 0) & (ys < a.shape[0]) & (xs >= 0) & (xs < a.shape[1])
+    a[ys[ok], xs[ok]] = colour
     img.paste(Image.fromarray(a, 'P'))
 
 
